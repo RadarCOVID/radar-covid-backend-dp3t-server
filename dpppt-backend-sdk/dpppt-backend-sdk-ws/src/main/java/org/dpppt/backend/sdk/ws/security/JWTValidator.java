@@ -39,12 +39,6 @@ public class JWTValidator implements OAuth2TokenValidator<Jwt> {
 
     @Override
     public OAuth2TokenValidatorResult validate(Jwt token) {
-        if (token.containsClaim("fake") && token.getClaimAsString("fake").equals("1")) {
-            //it is a fake token, but we still assume it is valid
-            if (logger.isDebugEnabled())
-                logger.debug("token valid -> fake: {}", tokenToString(token));
-            return OAuth2TokenValidatorResult.success();
-        }
         if (token.getExpiresAt() == null || Instant.now().plus(maxJwtValidity).isBefore(token.getExpiresAt())) {
             if (logger.isDebugEnabled())
                 logger.debug("token invalid -> expiration: {}", tokenToString(token));
