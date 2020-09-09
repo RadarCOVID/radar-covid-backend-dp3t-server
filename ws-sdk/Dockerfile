@@ -2,9 +2,9 @@
 # http://www.ubique.ch/
 
 FROM openjdk:11.0.7-jre-slim
-MAINTAINER Martin Alig <alig@ubique.ch>
-MAINTAINER Tobias Bachmann <bachmann@ubique.ch>
-MAINTAINER Felix Haller <haller@ubique.ch>
+LABEL maintainer = "Martin Alig <alig@ubique.ch>"
+LABEL maintainer = "Tobias Bachmann <bachmann@ubique.ch>"
+LABEL maintainer =  "Felix Haller <haller@ubique.ch>"
 
 
 # Install ws
