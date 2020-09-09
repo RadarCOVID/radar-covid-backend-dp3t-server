@@ -1,0 +1,50 @@
+spring:
+  profiles.active: local-sedia
+
+datasource:
+  url: jdbc:postgresql://localhost:5432/SEDIA_C19EXP?schema=dpppt
+  username: sediac19exp
+  password: sediac19exp
+  schema: dpppt
+  driverClassName: org.postgresql.ds.PGSimpleDataSource
+  failFast: true
+  maximumPoolSize: 5
+  maxLifetime: 1700000
+  idleTimeout: 600000
+  connectionTimeout: 30000
+  flyway.load: false
+
+application:
+  endpoint:
+    validation:
+      url: http://localhost:8082/v1/verify/tan
+      enabled: true
+
+ws:
+  exposedlist:
+    cachecontrol: 300000
+    batchlength: 7200000
+    requestTime: 1500
+  gaen:
+    randomkeysenabled: false
+    randomkeyamount: 10
+  retentiondays: 21
+  app:
+    source: org.dpppt.demo
+    key_size: 32
+    ios.bundleId: org.dpppt.ios.demo
+    android.packageName: org.dpppt.android.demo
+    gaen:
+      keyVersion: v1
+      keyIdentifier: 214
+      algorithm: 1.2.840.10045.4.3.2
+      region: es
+      key_size: 16
+    jwt:
+      publickey: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHYk1CQUdCeXFHU000OUFnRUdCU3VCQkFBakE0R0dBQVFCbUlXU0ptdGVGNkh2VnI0M1V5SzliZStlNkpPQgpDRjlVaXpMeis4a3padkVEc25nMGl3VEF3UVB0QzdBMDlzQjVMM3EwSUl1N250Yzd4U1VqSUdTakZvd0JXL0xPCnFtMTBYQ1NkUWNZT3BMTi85dUI1emZKVUZOY3B6Ynk4dDAzSlg3TUZiYi9vQm1pcFNNNHptSm1UajR3Qm9XZ2sKRlF6ZEJHcnAwR2laUU9WVXRtUT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+      algorithm: EC
+  headers:
+    protected: X-HELLO,X-BATCH-RELEASE-TIME
+    debug: true
+  ecdsa.credentials.privateKey: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ05OM3pieURMSzE3Y1RZVzIKR0tlaHNNaU5NMko4ZWNSVGtROUR2RytOaHNxaFJBTkNBQVMrVzZqcll0UlNsaDZwUVhmRmxoZGNlYnV2UVZkRwprSVNZK013aW8rNE1Ydjl0MmVSQWVmQ3FaS0ZiYi8wNEN0Z1BBNFJBViswRHgzbk02d04rRzA1eAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0t
+  ecdsa.credentials.publicKey: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFdmx1bzYyTFVVcFllcVVGM3haWVhYSG03cjBGWApScENFbVBqTUlxUHVERjcvYmRua1FIbndxbVNoVzIvOU9BcllEd09FUUZmdEE4ZDV6T3NEZmh0T2NRPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0t

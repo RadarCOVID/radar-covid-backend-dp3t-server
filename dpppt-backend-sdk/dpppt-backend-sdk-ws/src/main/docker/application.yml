@@ -1,0 +1,120 @@
+#
+# Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#
+# SPDX-License-Identifier: MPL-2.0
+#
+
+spring:
+  profiles.active: ${SPRING_PROFILES_ACTIVE:local-sedia}
+
+management.endpoints.enabled-by-default: false
+
+server:
+  error.whitelabel.enabled: true
+  compression:
+    enabled: true
+    mime-types:
+      - application/json
+      - application/xml
+      - text/plain
+      - text/xml
+  http2:
+    enabled: true
+  port: ${SERVER_PORT:8080}
+
+logging:
+  group:
+    cleanup:
+      - org.dpppt.backend.sdk.ws.config.WSSediaConfig
+      - org.dpppt.backend.sdk.data.gaen.JDBCGAENDataServiceImpl
+      - org.dpppt.backend.sdk.data.JDBCDPPPTDataServiceImpl
+      - org.dpppt.backend.sdk.data.JDBCRedeemDataServiceImpl
+  level:
+    root: info
+    cleanup: warn
+    org.springframework: warn
+    org.flywaydb: warn
+    org.dpppt.backend.sdk.data.gaen.fakekeyservice: info
+    org.dpppt.backend.sdk.ws.radarcovid: debug
+    org.dpppt: info
+  pattern:
+    #console: '%d %p [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-B3-ParentSpanId:-},%X{X-Span-Export:-}] [%c] - <%m>%n'
+    console: '[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} %c{1} - [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-}] - %msg%n'
+    #file: '%d %p [%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-B3-ParentSpanId:-},%X{X-Span-Export:-}] [%c] - %m%n'
+ 
+#  file:
+#    name: dp3t-ws.log
+#    max-size: 512KB
+#    max-history: 3
+
+#-------------------------------------------------------------------------------
+# JDBC Config
+#-------------------------------------------------------------------------------
+
+datasource:
+  url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/dpppt}
+  username: ${DATASOURCE_USER:dpppt}
+  password: ${DATASOURCE_PASS:dpppt}
+  schema: ${DATASOURCE_SCHEMA:dpppt}
+  driverClassName: org.postgresql.ds.PGSimpleDataSource
+  failFast: ${DATASOURCE_FAIL_FAST:true}
+  maximumPoolSize: ${DATASOURCE_MAX_POOL_SIZE:5}
+  maxLifetime: ${DATASOURCE_MAX_LIFE_TIME:1700000}
+  idleTimeout: ${DATASOURCE_IDLE_TIMEOUT:600000}
+  connectionTimeout: ${DATASOURCE_CONNECTION_TIMEOUT:30000}
+  flyway.load: ${DATASOURCE_FLYWAY_LOAD:true}
+
+ws:
+  exposedlist:
+    cachecontrol: ${WS_EXPOSEDLIST_CACHECONTROL:300000}
+    batchlength: ${WS_EXPOSEDLIST_BATCHLENGTH:7200000}
+    requestTime: ${WS_EXPOSEDLIST_REQUESTTIME:1500}
+  gaen:
+    randomkeysenabled: ${WS_GAEN_RANDOMKEYSENABLED:false}
+    randomkeyamount: ${WS_GAEN_RANDOMKEYAMOUNT:10}
+  retentiondays: ${WS_RETENTIONDAYS:21}
+  app:
+    source: ${WS_APP_SOURCE:org.dpppt.demo}
+    key_size: ${WS_APP_KEY_SIZE:32}
+    ios.bundleId: ${WS_APP_IOS_BUNDLEID:org.dpppt.ios.demo}
+    android.packageName: ${WS_APP_ANDROID_PACKAGENAME:org.dpppt.android.demo}
+    gaen:
+      keyVersion: ${WS_APP_GAEN_KEYVERSION:v1}
+      keyIdentifier: ${WS_APP_GAEN_KEYIDENTIFIER:228}
+      algorithm: ${WS_APP_GAEN_ALGORITHM:1.2.840.10045.4.3.2}
+      region: ${WS_APP_GAEN_REGION:es}
+      key_size: ${WS_APP_GAEN_KEY_SIZE:16}
+    jwt:
+      publickey: ${WS_APP_GAEN_JWT_PUBLIC_KEY}
+      algorithm: EC
+  headers:
+    protected: ${WS_HEADERS_PROTECTED:}
+    debug: ${WS_HEADERS_DEBUG:false}
+  ecdsa.credentials:
+    privateKey: ${GAEN_CREDENTIALS_PRIVATE_KEY}
+    publicKey: ${GAEN_CREDENTIALS_PUBLIC_KEY}
+
+springdoc:
+  paths-to-match: /v1/gaen/** 
+  #packagesToScan: org.dpppt.backend.sdk
+  api-docs:
+    path: /openapi/api-docs
+    enabled: ${OPENAPI_ENABLED:true}
+  swagger-ui:
+    path: /openapi/ui
+    enabled: ${OPENAPI_ENABLED:true}
+
+application:
+  openapi:
+    title: DP3T API
+    description: DP3T API
+    version: '@project.version@'
+    terms-of-service: https://radarcovid.covid19.gob.es/terms-of-service/use-conditions.html
+  endpoint:
+    validation:
+      url: ${TAN_VALIDATION_URL:https://host:port/verification/tan/verify}
+      enabled: ${TAN_VALIDATION_ENABLED:true}

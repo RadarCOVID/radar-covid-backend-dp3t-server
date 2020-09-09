@@ -1,0 +1,5 @@
+application:
+  endpoint:
+    validation:
+      url: ${TAN_VALIDATION_URL:https://d3d0clxg4q92wk.cloudfront.net/verification/verify/tan}
+      enabled: false
