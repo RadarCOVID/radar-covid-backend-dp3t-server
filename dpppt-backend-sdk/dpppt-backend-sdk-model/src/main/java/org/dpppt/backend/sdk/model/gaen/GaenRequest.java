@@ -11,7 +11,7 @@ public class GaenRequest {
     @NotNull
     @NotEmpty
     @Valid
-    @Size(min = 14, max = 14)
+    @Size(min = 14, max = 30)
     List<GaenKey> gaenKeys;
 
     @NotNull
