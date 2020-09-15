@@ -23,6 +23,29 @@ Fork from [DP3T-Backend-SDK](https://github.com/DP-3T/dp3t-sdk-backend) with the
   - Protocol Buffers compilation with [protoc-jar-maven-plugin](https://github.com/os72/protoc-jar-maven-plugin) and moving `.proto` files to [`dpppt-backend-sdk-model/src/main/proto`](./dpppt-backend-sdk/dpppt-backend-sdk-model/src/main/proto).
   - Upgraded versions (PostgreSQL, Tomcat, Spring Boot,...).
 
+See [PR](https://github.com/DP-3T/dp3t-sdk-backend/pull/143) with changes we requested to DP3T.
+
+## Installation and Getting Started
+
+### Building from Source
+
+To build the project, you need to run this command:
+
+```shell
+mvn clean package -P<environment>
+```
+
+Where `<environment>` has these possible values:
+
+- `local-env`. To run the application from local (eg, from IDE o from Maven using `mvn spring-boot:run`). It is the default profile, using [`application-local.yml`](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application-local.yml) configuration file.
+- `docker-env`. To run the application in a Docker container with `docker-compose`, using [`application-docker.yml`](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application-docker.yml) configuration file.
+- `pre-env`. To run the application in the Preproduction environment, using [`application-pre.yml`](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application-pre.yml) configuration file.
+- `pro-env`. To run the application in the Production environment, using [`application-pro.yml`](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application-pro.yml) configuration file.
+
+All profiles will load the default [configuration](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application.yml).
+
+Application uses [The Twelve-Factor App - Config](https://12factor.net/config) approach so configuration is stored in _environment variables_.
+
 ## Support and Feedback
 The following channels are available for discussions, feedback, and support requests:
 
