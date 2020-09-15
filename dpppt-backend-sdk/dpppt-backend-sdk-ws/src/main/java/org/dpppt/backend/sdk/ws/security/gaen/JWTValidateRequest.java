@@ -57,7 +57,6 @@ public class JWTValidateRequest implements ValidateRequest {
 		if (validationEnabled) {
 			String tan = token.containsClaim(CLAIM_TAN) ? (String) token.getClaim(CLAIM_TAN) : "";
 			result = StringUtils.isNoneEmpty(tan) 
-					//&& tan.matches("^\\d{12}$") TODO: GENERA ERROR !! PENDIENTE DE ANALIZAR 
 					&& validationClientService.validate(tan);
 		}
 		return result;
