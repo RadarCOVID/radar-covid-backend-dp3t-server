@@ -50,10 +50,12 @@ logging:
 #-------------------------------------------------------------------------------
 # JDBC Config
 #-------------------------------------------------------------------------------
+
 datasource:
-  url: jdbc:postgresql://localhost:5432/dpppt
-  username: dpppt
-  password: dpppt
+  url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/dpppt} # Value is overridden by environment
+  username: ${DATASOURCE_USER:dpppt} # Value is overridden by environment
+  password: ${DATASOURCE_PASS:dpppt} # Value is overridden by environment
+  schema: ${DATASOURCE_SCHEMA:dpppt} # Value is overridden by environment
   driverClassName: org.postgresql.ds.PGSimpleDataSource
 
 ws:
