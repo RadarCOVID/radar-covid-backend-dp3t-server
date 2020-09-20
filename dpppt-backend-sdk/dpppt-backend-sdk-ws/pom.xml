@@ -30,13 +30,13 @@
 		<profile>
 	        <id>pre-env</id>
 	        <properties>
-	            <build.profile.id>pre</build.profile.id>
+	            <build.profile.id>radarcovid-pre</build.profile.id>
 	        </properties>
 	    </profile>
         <profile>
 	        <id>pro-env</id>
 	        <properties>
-	            <build.profile.id>pro</build.profile.id>
+	            <build.profile.id>radarcovid-pro</build.profile.id>
 	        </properties>
 	    </profile>
         <profile>

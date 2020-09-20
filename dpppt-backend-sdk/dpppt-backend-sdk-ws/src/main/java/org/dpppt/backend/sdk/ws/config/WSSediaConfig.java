@@ -39,7 +39,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@Profile({"local-sedia","dev-sedia","pro-sedia","ptm-pre","ptm-pro"})
+@Profile({"local","radarcovid-pre","radarcovid-pro"})
 public class WSSediaConfig extends WSBaseConfig {
 	
 	@Value("${datasource.username}")
@@ -173,10 +173,10 @@ public class WSSediaConfig extends WSBaseConfig {
 		Environment env;
 		
 		protected boolean isProd() {
-			return !Arrays.asList(env.getActiveProfiles()).contains("local-sedia");
+			return !Arrays.asList(env.getActiveProfiles()).contains("local");
 		}
 		protected boolean isDev() {
-			return Arrays.asList(env.getActiveProfiles()).contains("local-sedia");
+			return Arrays.asList(env.getActiveProfiles()).contains("local");
 		}
 		
 		@Bean
