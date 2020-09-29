@@ -53,8 +53,8 @@ public class JWTValidateRequest implements ValidateRequest {
 	}
 
 	private boolean checkTanClaim(Jwt token) {
-		boolean result = !validationEnabled;
-		if (validationEnabled) {
+		boolean result = true;
+		if (validationEnabled && !isFakeToken(token)) {
 			String tan = token.containsClaim(CLAIM_TAN) ? (String) token.getClaim(CLAIM_TAN) : "";
 			result = StringUtils.isNoneEmpty(tan) 
 					&& validationClientService.validate(tan);
@@ -91,7 +91,7 @@ public class JWTValidateRequest implements ValidateRequest {
 			Jwt token = (Jwt) authObject;
 			GaenKey request = (GaenKey) others;
 			boolean fake = false;
-			if (token.containsClaim("fake") && token.getClaimAsString("fake").equals("1")) {
+			if (isFakeToken(token)) {
 				fake = true;
 			}
 			if (request.getFake() == 1) {
@@ -100,6 +100,10 @@ public class JWTValidateRequest implements ValidateRequest {
 			return fake;
 		}
 		throw new IllegalArgumentException();
+	}
+
+	private boolean isFakeToken(Jwt token) {
+		return token != null && (token.containsClaim("fake") && token.getClaimAsString("fake").equals("1"));
 	}
 
 }
