@@ -63,8 +63,10 @@ public class ControllerLoggerAspectConfiguration {
                     Enumeration<String> headerNames = request.getHeaderNames();
                     while (headerNames.hasMoreElements()) {
                         String headerName = headerNames.nextElement();
-                        String headerValue = request.getHeader(headerName);
-                        log.debug("Controller : [Header Name]:{}|[Header Value]:{}", headerName, headerValue);
+                        if (!headerName.startsWith("x-forwarded")) {
+                            String headerValue = request.getHeader(headerName);
+                            log.debug("Controller : [Header Name]:{}|[Header Value]:{}", headerName, headerValue);
+                        }
                     }
                     log.debug("Controller : Request Path info : {}", request.getServletPath());
                     log.debug("Controller : End Header Section of request ");
