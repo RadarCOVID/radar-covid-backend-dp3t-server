@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unrelease]
 
+## [1.1.2.RELEASE]
+
 ### Added
 
 - Updated DP3T release: 1.1.2
@@ -33,5 +35,6 @@ All notable changes to this project will be documented in this file.
 
 * DP3T Service. Initial version.
 
-[Unreleased]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.0.5.RELEASE...develop
+[Unreleased]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.1.2.RELEASE...develop
+[1.1.2.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.0.5.RELEASE...1.1.2.RELEASE
 [1.0.5.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/releases/tag/1.0.5.RELEASE
