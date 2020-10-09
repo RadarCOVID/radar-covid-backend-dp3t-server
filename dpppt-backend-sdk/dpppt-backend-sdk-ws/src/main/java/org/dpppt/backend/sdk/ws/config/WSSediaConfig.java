@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Ubique Innovation AG <https://www.ubique.ch>
+ * Copyright (c) 2020 Gobierno de España
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  *
  * SPDX-License-Identifier: MPL-2.0
  */
+
 
 package org.dpppt.backend.sdk.ws.config;
 
@@ -39,7 +40,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@Profile({"local","radarcovid-pre","radarcovid-pro"})
+@Profile({"radarcovid-local","radarcovid-pre","radarcovid-pro"})
 public class WSSediaConfig extends WSBaseConfig {
 	
 	@Value("${datasource.username}")
@@ -173,10 +174,10 @@ public class WSSediaConfig extends WSBaseConfig {
 		Environment env;
 		
 		protected boolean isProd() {
-			return !Arrays.asList(env.getActiveProfiles()).contains("local");
+			return !Arrays.asList(env.getActiveProfiles()).contains("radarcovid-local");
 		}
 		protected boolean isDev() {
-			return Arrays.asList(env.getActiveProfiles()).contains("local");
+			return Arrays.asList(env.getActiveProfiles()).contains("radarcovid-local");
 		}
 		
 		@Bean
