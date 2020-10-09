@@ -152,23 +152,16 @@ public class KeyVault {
 	}
 
 	public static PrivateKey loadPrivateKeyFromPem(String privatePart, String algorithm) {
-		PemReader readerPem = null;
-		PrivateKey result = null;
 		try {
 			var reader = new StringReader(privatePart);
-			readerPem = new PemReader(reader);
+			var readerPem = new PemReader(reader);
 			var obj = readerPem.readPemObject();
-			result = KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(obj.getContent()));
+			readerPem.close();
+			return KeyFactory.getInstance(algorithm).generatePrivate(new PKCS8EncodedKeySpec(obj.getContent()));
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException e) {
 			logger.error("Exception loading private key from PEM", e);
-		} finally {
-			try {
-				readerPem.close();
-			} catch (IOException e) {
-					logger.error("Exception closing PEM reader: {}", e.getMessage(), e);
-			}
+			return null;
 		}
-		return result;
 	}
 
 	public static PublicKey loadPublicKey(String publicPart, String algorithm)
@@ -198,26 +191,16 @@ public class KeyVault {
 	}
 
 	public static PublicKey loadPublicKeyFromPem(String publicPart, String algorithm) {
-		PemReader readerPem = null;
-		PublicKey result = null;
 		try {
 			var reader = new StringReader(publicPart);
-			readerPem = new PemReader(reader);
+			var readerPem = new PemReader(reader);
 			var obj = readerPem.readPemObject();
 			readerPem.close();
-			result = KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(obj.getContent()));
+			return KeyFactory.getInstance(algorithm).generatePublic(new X509EncodedKeySpec(obj.getContent()));
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException e) {
 			logger.error("Exception loading public key from PEM", e);
-		} finally {
-			if (readerPem != null) {
-				try {
-					readerPem.close();
-				} catch (IOException e) {
-					logger.error("Exception closing PEM reader: {}", e.getMessage(), e);
-				}
-			}
+			return null;
 		}
-		return result;
 	}
 
 	public static PublicKey loadPublicKeyFromX509Certificate(String publicPart, String algorithm) {

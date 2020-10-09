@@ -15,7 +15,6 @@ import org.dpppt.backend.sdk.data.config.DPPPTDataServiceConfig;
 import org.dpppt.backend.sdk.data.config.FlyWayConfig;
 import org.dpppt.backend.sdk.data.config.PostgresDataConfig;
 import org.dpppt.backend.sdk.model.Exposee;
-import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
 import java.sql.*;
 import java.time.*;
 import java.util.List;

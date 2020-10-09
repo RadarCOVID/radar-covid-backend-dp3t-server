@@ -10,23 +10,23 @@
 
 package org.dpppt.backend.sdk.ws.config;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.dpppt.backend.sdk.ws.security.KeyVault;
 import org.dpppt.backend.sdk.ws.security.KeyVault.PrivateKeyNoSuitableEncodingFoundException;
 import org.dpppt.backend.sdk.ws.security.KeyVault.PublicKeyNoSuitableEncodingFoundException;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.CloudFactory;
+import org.springframework.cloud.service.PooledServiceConnectorConfig.PoolConfig;
+import org.springframework.cloud.service.relational.DataSourceConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public abstract class WSCloudBaseConfig extends WSBaseConfig {
-
-	@Autowired
-	private DataSource dataSource;
 
 	abstract String getPublicKey();
 
@@ -35,27 +35,33 @@ public abstract class WSCloudBaseConfig extends WSBaseConfig {
 	@Value("${ws.cloud.base.config.publicKey.fromCertificate:true}")
 	private boolean publicKeyFromCertificate;
 
+	@Value("${datasource.maximumPoolSize}")
+	int dataSourceMaximumPoolSize;
+
+	@Value("${datasource.connectionTimeout}")
+	int dataSourceConnectionTimeout;
+
+	@Value("${datasource.leakDetectionThreshold:0}")
+	int dataSourceLeakDetectionThreshold;
+
+	@Bean
 	@Override
 	public DataSource dataSource() {
-		return dataSource;
+		PoolConfig poolConfig = new PoolConfig(dataSourceMaximumPoolSize, dataSourceConnectionTimeout);
+		DataSourceConfig dbConfig = new DataSourceConfig(poolConfig, null, null,
+				Map.of("leakDetectionThreshold", dataSourceLeakDetectionThreshold));
+		CloudFactory factory = new CloudFactory();
+		return factory.getCloud().getSingletonServiceConnector(DataSource.class, dbConfig);
 	}
 
 	@Bean
 	@Override
-	@ConditionalOnProperty(name = "datasource.flyway.load", havingValue = "true", matchIfMissing = true)
 	public Flyway flyway() {
 		Flyway flyWay = Flyway.configure().dataSource(dataSource()).locations("classpath:/db/migration/pgsql_cluster")
 				.load();
 		flyWay.migrate();
 		return flyWay;
-	}
 
-	@Bean
-	@ConditionalOnProperty(name = "datasource.flyway.load", havingValue = "false", matchIfMissing = true)
-	public Flyway flywayNoLoad() {
-		Flyway flyWay = Flyway.configure().dataSource(dataSource()).locations("classpath:/db/migration/pgsql_cluster")
-				.load();
-		return flyWay;
 	}
 
 	@Override
@@ -67,8 +73,8 @@ public abstract class WSCloudBaseConfig extends WSBaseConfig {
 	protected KeyVault keyVault() {
 		var privateKey = getPrivateKey();
 		var publicKey = getPublicKey();
-		
-		if(privateKey.isEmpty() || publicKey.isEmpty()) {
+
+		if (privateKey.isEmpty() || publicKey.isEmpty()) {
 			var kp = super.getKeyPair(algorithm);
 			var gaenKp = new KeyVault.KeyVaultKeyPair("gaen", kp);
 			var nextDayJWTKp = new KeyVault.KeyVaultKeyPair("nextDayJWT", kp);
@@ -78,7 +84,7 @@ public abstract class WSCloudBaseConfig extends WSBaseConfig {
 
 		var gaen = new KeyVault.KeyVaultEntry("gaen", getPrivateKey(), getPublicKey(), "EC");
 		var nextDayJWT = new KeyVault.KeyVaultEntry("nextDayJWT", getPrivateKey(), getPublicKey(), "EC");
-		var hashFilter = new KeyVault.KeyVaultEntry("hashFilter", getPrivateKey(), getPublicKey(), "EC"); 
+		var hashFilter = new KeyVault.KeyVaultEntry("hashFilter", getPrivateKey(), getPublicKey(), "EC");
 
 		try {
 			return new KeyVault(gaen, nextDayJWT, hashFilter);

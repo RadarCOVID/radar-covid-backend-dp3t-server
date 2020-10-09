@@ -74,11 +74,9 @@ public class MultipleJWTConfig {
 		DPPPTDataService dataService;
 
 		@Autowired
-		@Lazy
 		RedeemDataService redeemDataService;
 
 		@Autowired
-		@Lazy
 		ValidationClientService validationClientService;
 
 		protected String loadPublicKey() throws IOException {

@@ -160,18 +160,14 @@ public class SignatureResponseWrapper extends HttpServletResponseWrapper {
 			this.setHeader(HEADER_PUBLIC_KEY, getPublicKeyAsPEM());
 		}
 		this.setHeader(HEADER_SIGNATURE, signature);
-
 	}
 
 	private String getPublicKeyAsPEM() throws IOException {
 		StringWriter writer = new StringWriter();
 		PemWriter pemWriter = new PemWriter(writer);
-		try {
-			pemWriter.writeObject(new PemObject("PUBLIC KEY", pair.getPublic().getEncoded()));
-			pemWriter.flush();
-		} finally {
-			pemWriter.close();
-		}
+		pemWriter.writeObject(new PemObject("PUBLIC KEY", pair.getPublic().getEncoded()));
+		pemWriter.flush();
+		pemWriter.close();
 		return Base64Utils.encodeToUrlSafeString(writer.toString().trim().getBytes());
 	}
 

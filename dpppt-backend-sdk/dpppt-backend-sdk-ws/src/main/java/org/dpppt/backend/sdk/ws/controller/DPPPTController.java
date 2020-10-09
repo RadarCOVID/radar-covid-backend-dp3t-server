@@ -53,6 +53,11 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.protobuf.ByteString;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @Controller
 @RequestMapping("/v1")
 public class DPPPTController {
@@ -62,32 +67,41 @@ public class DPPPTController {
 	private final int exposedListCacheControl;
 	private final ValidateRequest validateRequest;
 	private final ValidationUtils validationUtils;
-	private final long batchLength;
+	// time in milliseconds that exposed keys are hidden before being served, in order to prevent timing attacks
+	private final long releaseBucketDuration;
 	private final long requestTime;
 
 
 	public DPPPTController(DPPPTDataService dataService, String appSource,
-			int exposedListCacheControl, ValidateRequest validateRequest, ValidationUtils validationUtils, long batchLength,
+			int exposedListCacheControl, ValidateRequest validateRequest, ValidationUtils validationUtils, long releaseBucketDuration,
 			long requestTime) {
 		this.dataService = dataService;
 		this.appSource = appSource;
 		this.exposedListCacheControl = exposedListCacheControl/1000/60;
 		this.validateRequest = validateRequest;
 		this.validationUtils = validationUtils;
-		this.batchLength = batchLength;
+		this.releaseBucketDuration = releaseBucketDuration;
 		this.requestTime = requestTime;
 	}
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@GetMapping(value = "")
+	@Operation(description  = "Hello return")
+	@ApiResponses(value = { @ApiResponse(responseCode = "200", description = "server live") })
 	public @ResponseBody ResponseEntity<String> hello() {
 		return ResponseEntity.ok().header("X-HELLO", "dp3t").body("Hello from DP3T WS");
 	}
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@PostMapping(value = "/exposed")
-	public @ResponseBody ResponseEntity<String> addExposee(@Valid @RequestBody ExposeeRequest exposeeRequest,
-			@RequestHeader(value = "User-Agent", required = true) String userAgent,
+	@Operation(description = "Send exposed key to server")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The exposed keys have been stored in the database"),
+			@ApiResponse(responseCode = "400", description = "Invalid base64 encoding in expose request"),
+			@ApiResponse(responseCode = "403", description = "Authentication failed") })
+	public @ResponseBody ResponseEntity<String> addExposee(
+			@Valid @RequestBody @Parameter(description = "The ExposeeRequest contains the SecretKey from the guessed infection date, the infection date itself, and some authentication data to verify the test result") ExposeeRequest exposeeRequest,
+			@RequestHeader(value = "User-Agent", required = true) @Parameter(description = "App Identifier (PackageName/BundleIdentifier) + App-Version + OS (Android/iOS) + OS-Version", example = "ch.ubique.android.starsdk;1.0;iOS;13.3") String userAgent,
 			@AuthenticationPrincipal Object principal) throws InvalidDateException {
 		long now = System.currentTimeMillis();
 		if (!this.validateRequest.isValid(principal)) {
@@ -118,8 +132,14 @@ public class DPPPTController {
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@PostMapping(value = "/exposedlist")
-	public @ResponseBody ResponseEntity<String> addExposee(@Valid @RequestBody ExposeeRequestList exposeeRequests,
-			@RequestHeader(value = "User-Agent", required = true) String userAgent,
+	@Operation(description = "Send a list of exposed keys to server")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The exposed keys have been stored in the database"),
+			@ApiResponse(responseCode = "400", description = "Invalid base64 encoding in exposee request"),
+			@ApiResponse(responseCode = "403", description = "Authentication failed") })
+	public @ResponseBody ResponseEntity<String> addExposee(
+			@Valid @RequestBody @Parameter(description = "The ExposeeRequest contains the SecretKey from the guessed infection date, the infection date itself, and some authentication data to verify the test result") ExposeeRequestList exposeeRequests,
+			@RequestHeader(value = "User-Agent", required = true) @Parameter(description = "App Identifier (PackageName/BundleIdentifier) + App-Version + OS (Android/iOS) + OS-Version", example = "ch.ubique.android.starsdk;1.0;iOS;13.3") String userAgent,
 			@AuthenticationPrincipal Object principal) throws InvalidDateException {
 		long now = System.currentTimeMillis();
 		if (!this.validateRequest.isValid(principal)) {
@@ -156,13 +176,18 @@ public class DPPPTController {
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@GetMapping(value = "/exposedjson/{batchReleaseTime}", produces = "application/json")
-	public @ResponseBody ResponseEntity<ExposedOverview> getExposedByDayDate(@PathVariable long batchReleaseTime,
+	@Operation(description = "Query list of exposed keys from a specific batch release time")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Returns ExposedOverview in json format, which includes all exposed keys which were published on _batchReleaseTime_"),
+			@ApiResponse(responseCode = "404", description = "Couldn't find _batchReleaseTime_") })
+	public @ResponseBody ResponseEntity<ExposedOverview> getExposedByDayDate(
+			@PathVariable @Parameter(description = "The batch release date of the exposed keys in milliseconds since Unix Epoch (1970-01-01), must be a multiple of 2 * 60 * 60 * 1000", example = "1593043200000") long batchReleaseTime,
 			WebRequest request) throws BadBatchReleaseTimeException{
 		if(!validationUtils.isValidBatchReleaseTime(batchReleaseTime)) {
 			return ResponseEntity.notFound().build();
 		}
 
-		List<Exposee> exposeeList = dataService.getSortedExposedForBatchReleaseTime(batchReleaseTime, batchLength);
+		List<Exposee> exposeeList = dataService.getSortedExposedForBatchReleaseTime(batchReleaseTime, releaseBucketDuration);
 		ExposedOverview overview = new ExposedOverview(exposeeList);
 		overview.setBatchReleaseTime(batchReleaseTime);
 		return ResponseEntity.ok().cacheControl(CacheControl.maxAge(Duration.ofMinutes(exposedListCacheControl)))
@@ -171,13 +196,18 @@ public class DPPPTController {
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@GetMapping(value = "/exposed/{batchReleaseTime}", produces = "application/x-protobuf")
-	public @ResponseBody ResponseEntity<Exposed.ProtoExposedList> getExposedByBatch(@PathVariable long batchReleaseTime,
+	@Operation(description = "Query list of exposed keys from a specific batch release time")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Returns ExposedOverview in protobuf format, which includes all exposed keys which were published on _batchReleaseTime_"),
+			@ApiResponse(responseCode = "404", description = "Couldn't find _batchReleaseTime_") })
+	public @ResponseBody ResponseEntity<Exposed.ProtoExposedList> getExposedByBatch(
+			@PathVariable @Parameter(description = "The batch release date of the exposed keys in milliseconds since Unix Epoch (1970-01-01), must be a multiple of 2 * 60 * 60 * 1000", example = "1593043200000") long batchReleaseTime,
 			WebRequest request) throws BadBatchReleaseTimeException {
 		if(!validationUtils.isValidBatchReleaseTime(batchReleaseTime)) {
 			return ResponseEntity.notFound().build();
 		}
 
-		List<Exposee> exposeeList = dataService.getSortedExposedForBatchReleaseTime(batchReleaseTime, batchLength);
+		List<Exposee> exposeeList = dataService.getSortedExposedForBatchReleaseTime(batchReleaseTime, releaseBucketDuration);
 		List<Exposed.ProtoExposee> exposees = new ArrayList<>();
 		for (Exposee exposee : exposeeList) {
 			Exposed.ProtoExposee protoExposee = Exposed.ProtoExposee.newBuilder()
@@ -194,7 +224,11 @@ public class DPPPTController {
 
 	@CrossOrigin(origins = { "https://editor.swagger.io" })
 	@GetMapping(value = "/buckets/{dayDateStr}", produces = "application/json")
-	public @ResponseBody ResponseEntity<BucketList> getListOfBuckets(@PathVariable String dayDateStr) {
+	@Operation(description = "Query number of available buckets in a given day, starting from midnight UTC")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Returns BucketList in json format, indicating all available buckets since _dayDateStr_")})
+	public @ResponseBody ResponseEntity<BucketList> getListOfBuckets(
+			@PathVariable @Parameter(description = "The date starting when to return the available buckets, in ISO8601 date format", example = "2019-01-31") String dayDateStr) {
 		OffsetDateTime day = LocalDate.parse(dayDateStr).atStartOfDay().atOffset(ZoneOffset.UTC);
 		OffsetDateTime currentBucket = day;
 		OffsetDateTime now = OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC);
@@ -202,7 +236,7 @@ public class DPPPTController {
 		while (currentBucket.toInstant().toEpochMilli() < Math.min(day.plusDays(1).toInstant().toEpochMilli(),
 				now.toInstant().toEpochMilli())) {
 			bucketList.add(currentBucket.toInstant().toEpochMilli());
-			currentBucket = currentBucket.plusSeconds(batchLength / 1000);
+			currentBucket = currentBucket.plusSeconds(releaseBucketDuration / 1000);
 		}
 		BucketList list = new BucketList();
 		list.setBuckets(bucketList);

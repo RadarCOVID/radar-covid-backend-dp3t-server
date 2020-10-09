@@ -24,5 +24,13 @@ public interface ValidateRequest {
 	public class InvalidDateException extends Exception {
 
 		private static final long serialVersionUID = 5886601055826066148L;
+
+		public InvalidDateException() {
+			super();
+		}
+
+		public InvalidDateException(String message) {
+			super(message);
+		}
 	}
 }

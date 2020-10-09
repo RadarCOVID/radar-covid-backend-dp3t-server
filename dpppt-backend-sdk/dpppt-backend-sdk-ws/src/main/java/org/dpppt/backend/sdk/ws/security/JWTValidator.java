@@ -11,7 +11,6 @@
 package org.dpppt.backend.sdk.ws.security;
 
 import java.time.Duration;
-import java.time.Instant;
 
 import org.dpppt.backend.sdk.data.RedeemDataService;
 import org.slf4j.Logger;
@@ -45,7 +44,8 @@ public class JWTValidator implements OAuth2TokenValidator<Jwt> {
                 logger.debug("token valid -> fake: {}", tokenToString(token));
             return OAuth2TokenValidatorResult.success();
         }
-        if (token.getExpiresAt() == null || Instant.now().plus(maxJwtValidity).isBefore(token.getExpiresAt())) {
+        //make sure the token has an expiration date AND is not valid for more than maxJwtValidity
+        if (token.getExpiresAt() == null || token.getIssuedAt().plus(maxJwtValidity).isBefore(token.getExpiresAt())) {
             if (logger.isDebugEnabled())
                 logger.debug("token invalid -> expiration: {}", tokenToString(token));
             return OAuth2TokenValidatorResult.failure(new OAuth2Error(OAuth2ErrorCodes.INVALID_REQUEST));

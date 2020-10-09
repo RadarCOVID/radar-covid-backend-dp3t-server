@@ -29,7 +29,6 @@ import org.dpppt.backend.sdk.ws.util.ValidationUtils;
 import org.flywaydb.core.Flyway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -93,17 +92,9 @@ public class WSProdConfig extends WSBaseConfig {
 
 	@Bean
 	@Override
-	@ConditionalOnProperty(name = "datasource.flyway.load", havingValue = "true", matchIfMissing = true)
 	public Flyway flyway() {
 		Flyway flyWay = Flyway.configure().dataSource(dataSource()).locations("classpath:/db/migration/pgsql").load();
 		flyWay.migrate();
-		return flyWay;
-	}
-
-	@Bean
-	@ConditionalOnProperty(name = "datasource.flyway.load", havingValue = "false", matchIfMissing = true)
-	public Flyway flywayNoLoad() {
-		Flyway flyWay = Flyway.configure().dataSource(dataSource()).locations("classpath:/db/migration/pgsql").load();
 		return flyWay;
 	}
 
@@ -147,8 +138,8 @@ public class WSProdConfig extends WSBaseConfig {
 	@Profile("debug")
 	@Configuration
 	public static class DebugConfig {
-		@Value("${ws.exposedlist.debug.batchlength: 86400000}")
-		long batchLength;
+		@Value("${ws.exposedlist.debug.releaseBucketDuration: 86400000}")
+		long releaseBucketDuration;
 	
 		@Value("${ws.exposedlist.debug.requestTime: 1500}")
 		long requestTime;
@@ -187,7 +178,7 @@ public class WSProdConfig extends WSBaseConfig {
 		}
 		@Bean
 		DebugController debugController() {
-			return new DebugController(dataService(),gaenSigner,backupValidator, gaenValidationUtils,Duration.ofMillis(batchLength), Duration.ofMillis(requestTime));
+			return new DebugController(dataService(),gaenSigner,backupValidator, gaenValidationUtils,Duration.ofMillis(releaseBucketDuration), Duration.ofMillis(requestTime));
 		}
 	}
 

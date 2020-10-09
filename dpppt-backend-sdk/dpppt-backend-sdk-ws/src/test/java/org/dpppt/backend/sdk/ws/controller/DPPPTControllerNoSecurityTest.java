@@ -26,7 +26,6 @@ import java.util.Iterator;
 import org.dpppt.backend.sdk.model.ExposeeAuthData;
 import org.dpppt.backend.sdk.model.ExposeeRequest;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -38,7 +37,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @SpringBootTest(properties = { "ws.gaen.randomkeysenabled=true" })
 public class DPPPTControllerNoSecurityTest extends BaseControllerNoSecurityTest {
 	@Test
-	@Ignore
 	public void testJWT() throws Exception {
 		ExposeeRequest exposeeRequest = new ExposeeRequest();
 		exposeeRequest.setAuthData(new ExposeeAuthData());
@@ -51,7 +49,6 @@ public class DPPPTControllerNoSecurityTest extends BaseControllerNoSecurityTest 
 	}
 
 	@Test
-	@Ignore
 	public void testJWTFake() throws Exception {
 		ExposeeRequest exposeeRequest = new ExposeeRequest();
 		exposeeRequest.setAuthData(new ExposeeAuthData());
@@ -142,15 +139,15 @@ public class DPPPTControllerNoSecurityTest extends BaseControllerNoSecurityTest 
 		Iterator<JsonNode> buckets = mapper.readTree(response.getContentAsString()).get("buckets").elements();
 		Long first = buckets.next().asLong();
 		Long next = buckets.next().asLong();
-		Long batchLength = next - first;
+		Long releaseBucketDuration = next - first;
 		long future = (long) Math
 				.floor(OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).plusDays(1).toInstant().toEpochMilli()
-						/ batchLength)
-				* batchLength;
+						/ releaseBucketDuration)
+				* releaseBucketDuration;
 		long past = (long) Math.floor(
 				OffsetDateTime.now().withOffsetSameInstant(ZoneOffset.UTC).minusYears(1).toInstant().toEpochMilli()
-						/ batchLength)
-				* batchLength;
+						/ releaseBucketDuration)
+				* releaseBucketDuration;
 
 		response = mockMvc.perform(get("/v1/exposed/" + Long.toString(future))).andExpect(status().isNotFound())
 				.andReturn().getResponse();
