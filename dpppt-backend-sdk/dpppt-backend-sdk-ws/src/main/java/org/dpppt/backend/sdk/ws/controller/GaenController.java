@@ -10,6 +10,7 @@
 package org.dpppt.backend.sdk.ws.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +21,7 @@ import org.dpppt.backend.sdk.data.gaen.FakeKeyService;
 import org.dpppt.backend.sdk.data.gaen.GAENDataService;
 import org.dpppt.backend.sdk.model.gaen.*;
 import org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable;
+import org.dpppt.backend.sdk.ws.radarcovid.annotation.ResponseRetention;
 import org.dpppt.backend.sdk.ws.security.ValidateRequest;
 import org.dpppt.backend.sdk.ws.security.ValidateRequest.InvalidDateException;
 import org.dpppt.backend.sdk.ws.security.signature.ProtoSignature;
@@ -100,6 +102,7 @@ public class GaenController {
 
 	@PostMapping(value = "/exposed")
 	@Loggable
+	@ResponseRetention(time = "application.response.retention.time.exposed")
 	@Transactional
 	@Operation(description = "Send exposed keys to server - includes a fix for the fact that GAEN doesn't give access to the current day's exposed key")
 	@ApiResponses(value = {

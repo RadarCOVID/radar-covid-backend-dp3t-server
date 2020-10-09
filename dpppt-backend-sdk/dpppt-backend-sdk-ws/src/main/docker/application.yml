@@ -133,3 +133,10 @@ application:
     validation:
       url: ${TAN_VALIDATION_URL:}
       enabled: ${TAN_VALIDATION_ENABLED:false}
+  response:
+    retention:
+      enabled: ${RESPONSE_RETENTION_ENABLED:false}
+      time:
+        exposed: ${RESPONSE_RETENTION_TIME_EXPOSED:1000} # milliseconds
+  log:
+    enabled: ${LOGGABLE_ENABLED:false}
