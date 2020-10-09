@@ -12,6 +12,7 @@ If the above doesn't help, please [submit an issue](https://github.com/RadarCOVI
 
 **Note**: If you want to report a regression (something that has worked before, but broke with a new release), please mark your issue title as such using `[Regression] Your title here`. This enables us to quickly detect and fix regressions.
 
+
 ## I want to contribute to RadarCOVID
 
 Before you submit a new pull-request, please check the following few things:
@@ -21,11 +22,11 @@ Before you submit a new pull-request, please check the following few things:
 - [ ] My pull-request introduces new features and/or fixes issues (please reference an issue if there exist one).
 - [ ] If my pull-request changes tooling, I added some major arguments, on why this tooling is better.
 
-## Why did my issue/PR get closed/unattended?
+## Why did my issue/PR get closed?
 
-We are currently focused on national rollout. Hence, we try to keep the changes to a minimum and expect to take care of PRs in medium term. Please, be patience.
+We currently are preparing to go live soon. Hence, we try to keep the changes to a minimum. Since we also heavily rely on public pentesting, we also don't want to introduce new dependencies for no reason.
 
-Proposed changes exclusively related to the tools we use should be thoroughly justified. We use a set of tools and configurations that we are used to. Therefore, unless strong arguments for changes are provided, we probably won't change it.
+Changes, which only concern different tooling should have arguments attached. We are using tools and setups we are used to, and if there is no major reason (security issues, performance issues) we probably won't change it.
 
 ## Above All, Thanks for Your Contributions
 

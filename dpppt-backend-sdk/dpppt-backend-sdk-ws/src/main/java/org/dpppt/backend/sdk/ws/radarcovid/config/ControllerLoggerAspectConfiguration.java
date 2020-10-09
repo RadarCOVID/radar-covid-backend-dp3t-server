@@ -82,7 +82,7 @@ public class ControllerLoggerAspectConfiguration {
         @AfterThrowing(pointcut = "execution(@org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable * *..controller..*(..))", throwing = "exception")
         public void logAfterThrowing(JoinPoint joinPoint, Throwable exception) {
             log.error("Controller : An exception has been thrown in {} ()", joinPoint.getSignature().getName());
-            log.error("Controller : Cause : " + exception.getCause());
+            log.error("Controller : Cause : {}", exception.getCause());
             log.debug("************************* END CONTROLLER **********************************");
         }
 
