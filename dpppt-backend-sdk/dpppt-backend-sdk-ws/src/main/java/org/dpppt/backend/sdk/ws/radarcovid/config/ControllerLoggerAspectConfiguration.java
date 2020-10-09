@@ -37,10 +37,7 @@ import java.util.Map;
 @ConditionalOnProperty(name = "application.log.enabled", havingValue = "true", matchIfMissing = true)
 public class ControllerLoggerAspectConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger("org.dpppt.backend.sdk.ws.radarcovid.Loggable");
-
-    public static final String RESPONSE_NAME_AT_ATTRIBUTES = ServletRequestAttributes.class
-            .getName() + ".ATTRIBUTE_NAME";
+    private static final Logger log = LoggerFactory.getLogger("org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable");
 
     @Aspect
     @Component
@@ -74,15 +71,11 @@ public class ControllerLoggerAspectConfiguration {
             }
         }
 
-        @AfterReturning(pointcut = "execution(@org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable * *..controller..*(..))", returning = "result")
-        public void logAfter(JoinPoint joinPoint, Object result) {
-            log.debug("************************* END CONTROLLER **********************************");
-        }
-
         @AfterThrowing(pointcut = "execution(@org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable * *..controller..*(..))", throwing = "exception")
         public void logAfterThrowing(JoinPoint joinPoint, Throwable exception) {
             log.error("Controller : An exception has been thrown in {} ()", joinPoint.getSignature().getName());
             log.error("Controller : Cause : {}", exception.getCause());
+            log.error("Controller : Message : {}", exception.getMessage());
             log.debug("************************* END CONTROLLER **********************************");
         }
 
@@ -112,7 +105,7 @@ public class ControllerLoggerAspectConfiguration {
                     }
                     log.debug("Controller : End Header Section of response ");
                 }
-
+                log.debug("************************* END CONTROLLER **********************************");
                 return result;
 
             } catch (IllegalArgumentException e) {
@@ -121,7 +114,6 @@ public class ControllerLoggerAspectConfiguration {
                 throw e;
             }
         }
-
     }
 
 }
