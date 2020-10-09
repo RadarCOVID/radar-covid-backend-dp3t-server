@@ -1,5 +1,17 @@
 application:
   endpoint:
     validation:
-      url: ${TAN_VALIDATION_URL:https://d3d0clxg4q92wk.cloudfront.net/verification/verify/tan}
+      url: http://localhost:8080/v1/verify/tan
       enabled: false
+  jwt:
+    validate:
+      fake:
+        enabled: false
+
+cloud:
+  aws:
+    region:
+      auto: false
+      static: eu-west-1
+    stack:
+      auto: false

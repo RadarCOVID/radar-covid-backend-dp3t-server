@@ -27,25 +27,22 @@
     </properties>
 
     <profiles>
-		<profile>
-	        <id>pre-env</id>
-	        <properties>
-	            <build.profile.id>radarcovid-pre</build.profile.id>
-	        </properties>
-	    </profile>
         <profile>
-	        <id>pro-env</id>
-	        <properties>
-	            <build.profile.id>radarcovid-pro</build.profile.id>
-	        </properties>
-	    </profile>
-        <profile>
-            <id>local-env</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>radarcovid-local</id>
             <properties>
-                <build.profile.id>local</build.profile.id>
+                <build.profile.id>radarcovid-local</build.profile.id>
+            </properties>
+        </profile>
+		<profile>
+            <id>radarcovid-pre</id>
+            <properties>
+                <build.profile.id>radarcovid-pre</build.profile.id>
+            </properties>
+        </profile>
+        <profile>
+            <id>radarcovid-pro</id>
+            <properties>
+                <build.profile.id>radarcovid-pro</build.profile.id>
             </properties>
         </profile>
     </profiles>
@@ -59,7 +56,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
         </dependency>
-
+        
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-cloud-connectors</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-aws-parameter-store-config</artifactId>
+		</dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
@@ -168,8 +173,8 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 		<dependency>
-		    <groupId>joda-time</groupId>
-		    <artifactId>joda-time</artifactId>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
 		</dependency>
     </dependencies>
 

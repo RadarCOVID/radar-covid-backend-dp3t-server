@@ -1,4 +1,0 @@
-ws:
-  headers:
-    protected: X-HELLO,X-BATCH-RELEASE-TIME
-    debug: true
