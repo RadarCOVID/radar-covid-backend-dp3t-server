@@ -60,7 +60,11 @@ public class ResponseRetentionAspectConfiguration {
                 long responseRetentionTimeMillis = getTimeMillis(responseRetention.time());
                 log.debug("Controller : Controller {}.{} () execution time : {} ms", className, methodName, elapsedTime);
                 if (elapsedTime < responseRetentionTimeMillis) {
-                	Thread.sleep(responseRetentionTimeMillis - elapsedTime);
+                	try {
+                		Thread.sleep(responseRetentionTimeMillis - elapsedTime);
+                	} catch (InterruptedException e) {
+                		log.warn("Controller : Controller {}.{} () Thread sleep interrupted", className, methodName);
+                	}
                 }
                 elapsedTime = System.currentTimeMillis() - start;
                 log.debug("Controller : Controller {}.{} () NEW execution time : {} ms", className, methodName, elapsedTime);
