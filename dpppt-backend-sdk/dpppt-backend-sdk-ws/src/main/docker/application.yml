@@ -32,7 +32,13 @@ cloud:
     stack:
       auto: ${CLOUD.AWS.STACK.AUTO:false}
 
-management.endpoints.enabled-by-default: false
+management:
+  endpoints.enabled-by-default: false
+  metrics:
+    export:
+      cloudwatch:
+        namespace: dpppt
+        batch-size: 20
 
 server:
   error.whitelabel.enabled: true
@@ -62,8 +68,13 @@ logging:
     com.amazonaws: error
     org.dpppt.backend.sdk.data.gaen.fakekeyservice: info
     org.dpppt.backend.sdk.ws.radarcovid: debug
+    org.dpppt.backend.sdk.ws.radarcovid.annotation: info
+    org.dpppt.backend.sdk.ws.radarcovid.config: info
     org.dpppt.backend.sdk.ws.security.gaen: debug
     org.dpppt: info
+    com.zaxxer.hikari.pool.HikariPool: debug
+    com.zaxxer.hikari.HikariConfig: debug
+    com.zaxxer.hikari: debug
   pattern:
     console: '[%-5level] [%X{X-B3-TraceId:-},%X{X-Amz-Cf-Id:-}] - %c{1} - %msg%n'
 
@@ -138,5 +149,7 @@ application:
       enabled: ${RESPONSE_RETENTION_ENABLED:false}
       time:
         exposed: ${RESPONSE_RETENTION_TIME_EXPOSED:1000} # milliseconds
+        exposednextday: ${RESPONSE_RETENTION_TIME_EXPOSEDNEXTDAY:1000} # milliseconds
+
   log:
     enabled: ${LOGGABLE_ENABLED:false}

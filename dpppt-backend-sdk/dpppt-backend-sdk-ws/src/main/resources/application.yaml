@@ -62,6 +62,8 @@ logging:
     com.amazonaws: error
     org.dpppt.backend.sdk.data.gaen.fakekeyservice: info
     org.dpppt.backend.sdk.ws.radarcovid: debug
+    org.dpppt.backend.sdk.ws.radarcovid.config: info
+    org.dpppt.backend.sdk.ws.radarcovid.annotation: info
     org.dpppt.backend.sdk.ws.security.gaen: debug
     org.dpppt: info
   pattern:
@@ -138,5 +140,7 @@ application:
       enabled: ${RESPONSE_RETENTION_ENABLED:true}
       time:
         exposed: ${RESPONSE_RETENTION_TIME_EXPOSED:1000} # milliseconds
+        exposednextday: ${RESPONSE_RETENTION_TIME_EXPOSEDNEXTDAY:1000} # milliseconds
+
   log:
     enabled: ${LOGGABLE_ENABLED:true}

@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Setted responses retention time on fake requests
-- Added aspect configuration
+- Setted responses retention time on fake requests.
+- Added aspect configuration.
+- AOP aspects ordering.
 
 ### Fixed
 
@@ -19,14 +20,14 @@ All notable changes to this project will be documented in this file.
 
 - Updated DP3T release: 1.1.2
 - Environment description in README.md file.
-- Added license
+- Added license.
 - Added CODE_OF_CONDUCT.md file.
 - Added CHANGELOG.md file.
 
 ### Changed
 
 - Max keys are now 30.
-- Updated TestContainers version
+- Updated TestContainers version.
 
 ### Deleted
 

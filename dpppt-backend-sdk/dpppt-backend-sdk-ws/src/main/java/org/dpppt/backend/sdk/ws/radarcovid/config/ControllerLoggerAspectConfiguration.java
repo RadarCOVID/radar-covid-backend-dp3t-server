@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,7 @@ public class ControllerLoggerAspectConfiguration {
     private static final Logger log = LoggerFactory.getLogger("org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable");
 
     @Aspect
+    @Order(1)
     @Component
     public class ControllerLoggerAspect {
         @Before("execution(@org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable * *..controller..*(..))")

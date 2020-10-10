@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -31,6 +32,7 @@ public class MethodLoggerAspectConfiguration {
     private static final Logger log = LoggerFactory.getLogger("org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable");
 
     @Aspect
+    @Order(2)
     @Component
     public class MethodLoggerAspect {
         @Before("execution(@org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable * *..business.impl..*(..))")

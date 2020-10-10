@@ -191,6 +191,7 @@ public class GaenController {
 
 	@PostMapping(value = "/exposednextday")
 	@Loggable
+	@ResponseRetention(time = "application.response.retention.time.exposednextday")
 	@Transactional
 	@Operation(description = "Allows the client to send the last exposed key of the infection to the backend server. The JWT must come from a previous call to /exposed")
 	@ApiResponses(value = {
