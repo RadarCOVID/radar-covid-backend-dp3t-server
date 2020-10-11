@@ -41,6 +41,7 @@
 		<micrometer-registry-cloudwatch2.version>1.5.5</micrometer-registry-cloudwatch2.version>
 		<postgresql-version>42.2.13</postgresql-version>
 		<protobuf-java-version>3.12.1</protobuf-java-version>
+		<shedlock.version>4.14.0</shedlock.version>
 		<snakeyaml-version>1.26</snakeyaml-version>
 		<springdoc-openapi-version>1.4.0</springdoc-openapi-version>
 		<tomcat-version>9.0.36</tomcat-version>
@@ -252,6 +253,16 @@
 				<artifactId>aspectjweaver</artifactId>
 				<version>${aspectj-version}</version>
 				<scope>compile</scope>
+			</dependency>
+			<dependency>
+				<groupId>net.javacrumbs.shedlock</groupId>
+				<artifactId>shedlock-provider-jdbc-template</artifactId>
+				<version>${shedlock.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.javacrumbs.shedlock</groupId>
+				<artifactId>shedlock-spring</artifactId>
+				<version>${shedlock.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

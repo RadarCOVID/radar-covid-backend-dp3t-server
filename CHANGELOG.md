@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Setted responses retention time on fake requests.
 - Added aspect configuration.
 - AOP aspects ordering.
+- [ShedLock](https://github.com/lukas-krecan/ShedLock) support. [PR #262](https://github.com/DP-3T/dp3t-sdk-backend/pull/262) created on [dp3t-sdk-backend](https://github.com/DP-3T/dp3t-sdk-backend).
 
 ### Fixed
 
