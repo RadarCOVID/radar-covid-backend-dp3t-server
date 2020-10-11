@@ -148,7 +148,7 @@ public class GaenController {
 				&& ((Jwt) principal).getClaimAsString("fake").equals("1")) {
 			Jwt token = (Jwt) principal;
 			if (FAKE_CODE.equals(token.getSubject())) {
-				logger.info("Claim is fake - subject: {}", token.getSubject());
+				logger.debug("Claim is fake - subject: {}", token.getSubject());
 			} else if (!nonFakeKeys.isEmpty()) {
 				return () -> ResponseEntity.badRequest().body("Claim is fake but list contains non fake keys");
 			}

@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 - AOP aspects ordering.
 - [ShedLock](https://github.com/lukas-krecan/ShedLock) support. [PR #262](https://github.com/DP-3T/dp3t-sdk-backend/pull/262) created on [dp3t-sdk-backend](https://github.com/DP-3T/dp3t-sdk-backend).
 
+### Changed
+
+- Log in debug mode fake tokens validation.
+
 ### Fixed
 
 - Fixed messages in aspects.

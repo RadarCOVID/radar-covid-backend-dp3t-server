@@ -50,7 +50,6 @@ public class JWTValidateRequest implements ValidateRequest {
         if (authObject instanceof Jwt) {
             Jwt token = (Jwt) authObject;
             boolean checkTan = checkTanClaim(token);
-            logger.info("checkTan = {}", checkTan);
             return token.containsClaim(CLAIM_SCOPE) && token.getClaim(CLAIM_SCOPE).equals("exposed") && checkTan;
         }
         return false;
@@ -61,6 +60,7 @@ public class JWTValidateRequest implements ValidateRequest {
         if (validationEnabled && !isFakeToken(token)) {
             String tan = token.containsClaim(CLAIM_TAN) ? (String) token.getClaim(CLAIM_TAN) : "";
             result = StringUtils.isNoneEmpty(tan) && validationClientService.validate(tan);
+            logger.info("checkTan = {}", result);
         }
         return result;
     }
@@ -100,7 +100,7 @@ public class JWTValidateRequest implements ValidateRequest {
                 fake = true;
             }
 
-            // FIXME: Quitar una vez que apps desplieguen nueva versión
+            // FIXME: Quitar una vez que apps desplieguen nueva versiÃ³n
             if (fakeEnabled && !fake && token.containsClaim("onset") && token.getClaim("onset") != null) {
                 long jwtKeyDate = LocalDate.parse(token.getClaim("onset")).minusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli();
                 var keyDate = Duration.of(request.getRollingStartNumber(), GaenUnit.TenMinutes);
