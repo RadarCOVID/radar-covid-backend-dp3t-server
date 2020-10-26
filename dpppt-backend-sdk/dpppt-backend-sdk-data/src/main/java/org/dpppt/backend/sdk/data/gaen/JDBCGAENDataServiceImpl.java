@@ -48,12 +48,15 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 	public void upsertExposees(List<GaenKey> gaenKeys) {
 		String sql = null;
 		if (dbType.equals(PGSQL)) {
-			sql = "insert into t_gaen_exposed (key, rolling_start_number, rolling_period, transmission_risk_level, received_at) values (:key, :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at)"
+			sql = "insert into t_gaen_exposed (key, rolling_start_number, rolling_period, transmission_risk_level, received_at,"
+					                       + " country_origin, report_type, days_since_onset, efgs_sharing)"
+		            + " values (:key, :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at,"
+					        + " :country_origin, :report_type, :days_since_onset, :efgs_sharing)"
 					+ " on conflict on constraint gaen_exposed_key do nothing";
 		} else {
-			sql = "merge into t_gaen_exposed using (values(cast(:key as varchar(24)), :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at))"
-					+ " as vals(key, rolling_start_number, rolling_period, transmission_risk_level, received_at) on t_gaen_exposed.key = vals.key"
-					+ " when not matched then insert (key, rolling_start_number, rolling_period, transmission_risk_level, received_at) values (vals.key, vals.rolling_start_number, vals.rolling_period, transmission_risk_level, vals.received_at)";
+			sql = "merge into t_gaen_exposed using (values(cast(:key as varchar(24)), :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at, :country_origin, :report_type, :days_since_onset, :efgs_sharing))"
+					+ " as vals(key, rolling_start_number, rolling_period, transmission_risk_level, received_at, country_origin, report_type, days_since_onset, efgs_sharing) on t_gaen_exposed.key = vals.key"
+					+ " when not matched then insert (key, rolling_start_number, rolling_period, transmission_risk_level, received_at, country_origin, report_type, days_since_onset, efgs_sharing) values (vals.key, vals.rolling_start_number, vals.rolling_period, vals.transmission_risk_level, vals.received_at, vals.country_origin, vals.report_type, vals.days_since_onset, vals.efgs_sharing)";
 		}
 		var parameterList = new ArrayList<MapSqlParameterSource>();
 		var nowMillis = System.currentTimeMillis();
@@ -65,7 +68,11 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 			params.addValue("rolling_period", gaenKey.getRollingPeriod());
 			params.addValue("transmission_risk_level", gaenKey.getTransmissionRiskLevel());
 			params.addValue("received_at", new Date(receivedAt));
-			
+			params.addValue("country_origin", gaenKey.getCountryOrigin());
+			params.addValue("report_type", gaenKey.getReportType());
+			params.addValue("days_since_onset", gaenKey.getDaysSinceOnsetOfSymptons());
+			params.addValue("efgs_sharing", gaenKey.getEfgsSharing());
+
 			parameterList.add(params);
 		}
 		jt.batchUpdate(sql, parameterList.toArray(new MapSqlParameterSource[0]));
@@ -74,18 +81,13 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 	@Override
 	@Transactional(readOnly = true)
 	public int getMaxExposedIdForKeyDate(Long keyDate, Long publishedAfter, Long publishedUntil) {
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("rollingPeriodStartNumberStart",
-				GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0), Instant.ofEpochMilli(keyDate)));
-		params.addValue("rollingPeriodStartNumberEnd", GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0),
-				Instant.ofEpochMilli(keyDate).atOffset(ZoneOffset.UTC).plusDays(1).toInstant()));
-		params.addValue("publishedUntil", new Date(publishedUntil));
-		
+		MapSqlParameterSource params = getParameters(keyDate, publishedUntil);
+
 		String sql = "select max(pk_exposed_id) from t_gaen_exposed where"
 				+ " rolling_start_number >= :rollingPeriodStartNumberStart"
 				+ " and rolling_start_number < :rollingPeriodStartNumberEnd"
 				+ " and received_at < :publishedUntil";
-		
+
 		if (publishedAfter != null) {
 			params.addValue("publishedAfter", new Date(publishedAfter));
 			sql += " and received_at >= :publishedAfter";
@@ -102,26 +104,31 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 	@Override
 	@Transactional(readOnly = true)
 	public List<GaenKey> getSortedExposedForKeyDate(Long keyDate, Long publishedAfter, Long publishedUntil) {
-		MapSqlParameterSource params = new MapSqlParameterSource();
-		params.addValue("rollingPeriodStartNumberStart",
-				GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0), Instant.ofEpochMilli(keyDate)));
-		params.addValue("rollingPeriodStartNumberEnd", GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0),
-				Instant.ofEpochMilli(keyDate).atOffset(ZoneOffset.UTC).plusDays(1).toInstant()));
-		params.addValue("publishedUntil", new Date(publishedUntil));
+		MapSqlParameterSource params = getParameters(keyDate, publishedUntil);
 
 		String sql = "select pk_exposed_id, key, rolling_start_number, rolling_period, transmission_risk_level from t_gaen_exposed where"
 				+ " rolling_start_number >= :rollingPeriodStartNumberStart"
-				+ " and rolling_start_number < :rollingPeriodStartNumberEnd" 
+				+ " and rolling_start_number < :rollingPeriodStartNumberEnd"
 				+ " and received_at < :publishedUntil";
 
 		if (publishedAfter != null) {
 			params.addValue("publishedAfter", new Date(publishedAfter));
 			sql += " and received_at >= :publishedAfter";
 		}
-		
+
 		sql += " order by pk_exposed_id desc";
-		
+
 		return jt.query(sql, params, new GaenKeyRowMapper());
+	}
+
+	private MapSqlParameterSource getParameters(Long keyDate, Long publishedUntil) {
+		MapSqlParameterSource params = new MapSqlParameterSource();
+		params.addValue("rollingPeriodStartNumberStart",
+						GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0), Instant.ofEpochMilli(keyDate)));
+		params.addValue("rollingPeriodStartNumberEnd", GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0),
+																				   Instant.ofEpochMilli(keyDate).atOffset(ZoneOffset.UTC).plusDays(1).toInstant()));
+		params.addValue("publishedUntil", new Date(publishedUntil));
+		return params;
 	}
 
 	@Override

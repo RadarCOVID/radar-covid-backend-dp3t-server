@@ -1,9 +1,9 @@
 package org.dpppt.backend.sdk.model.gaen;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
-import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A GaenKey is a Temporary Exposure Key of a person being infected, so it's also an Exposed Key.
@@ -32,14 +32,31 @@ public class GaenKey {
     @Schema(description = "If fake = 0, the key is a valid key. If fake = 1, the key will be discarded.")
     private Integer fake = 0;
 
+    @Schema(description = "Country origin for EFGS")
+    private String countryOrigin;
+
+    @Schema(description = "Report Type")
+    private Integer reportType;
+
+    @Schema(description = "Days since onset of symptons")
+    private Long daysSinceOnsetOfSymptons;
+
+    @Schema(description = "If key is shareable with EFGS or not")
+    private Boolean efgsSharing;
+
     public GaenKey() {
     }
 
-    public GaenKey(String keyData, Integer rollingStartNumber, Integer rollingPeriod, Integer transmissionRiskLevel) {
+    public GaenKey(String keyData, Integer rollingStartNumber, Integer rollingPeriod, Integer transmissionRiskLevel,
+                   String countryOrigin, Integer reportType, Long daysSinceOnsetOfSymptons, Boolean efgsSharing) {
         this.keyData = keyData;
         this.rollingStartNumber = rollingStartNumber;
         this.rollingPeriod = rollingPeriod;
         this.transmissionRiskLevel = transmissionRiskLevel;
+        this.countryOrigin = countryOrigin;
+        this.reportType = reportType;
+        this.daysSinceOnsetOfSymptons = daysSinceOnsetOfSymptons;
+        this.efgsSharing = efgsSharing;
     }
 
     public String getKeyData() {
@@ -82,4 +99,35 @@ public class GaenKey {
         this.fake = fake;
     }
 
+    public String getCountryOrigin() {
+        return countryOrigin;
+    }
+
+    public void setCountryOrigin(String countryOrigin) {
+        this.countryOrigin = countryOrigin;
+    }
+
+    public Integer getReportType() {
+        return reportType;
+    }
+
+    public void setReportType(Integer reportType) {
+        this.reportType = reportType;
+    }
+
+    public Long getDaysSinceOnsetOfSymptons() {
+        return daysSinceOnsetOfSymptons;
+    }
+
+    public void setDaysSinceOnsetOfSymptons(Long daysSinceOnsetOfSymptons) {
+        this.daysSinceOnsetOfSymptons = daysSinceOnsetOfSymptons;
+    }
+
+    public Boolean getEfgsSharing() {
+        return efgsSharing;
+    }
+
+    public void setEfgsSharing(Boolean efgsSharing) {
+        this.efgsSharing = efgsSharing;
+    }
 }

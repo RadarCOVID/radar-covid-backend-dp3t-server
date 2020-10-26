@@ -24,10 +24,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
+import javax.sql.DataSource;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-
-import javax.sql.DataSource;
 
 @Configuration
 public class DPPPTDataServiceConfig {
@@ -36,6 +35,10 @@ public class DPPPTDataServiceConfig {
     boolean randomkeysenabled;
     @Value("${ws.exposedlist.releaseBucketDuration: 7200000}")
 	long releaseBucketDuration;
+    @Value("${ws.app.efgs.country-origin:ES}")
+    String efgsCountryOrigin;
+    @Value("${ws.app.efgs.report-type:1}")
+    int efgsReportType;
 
     @Autowired
     DataSource dataSource;
@@ -70,6 +73,6 @@ public class DPPPTDataServiceConfig {
 
     @Bean
     public FakeKeyService fakeKeyService() throws NoSuchAlgorithmException {
-        return new FakeKeyService(fakeService(), 10, 16, Duration.ofDays(21), randomkeysenabled);
+        return new FakeKeyService(fakeService(), 10, 16, Duration.ofDays(21), randomkeysenabled, efgsCountryOrigin, efgsReportType);
     }
 }

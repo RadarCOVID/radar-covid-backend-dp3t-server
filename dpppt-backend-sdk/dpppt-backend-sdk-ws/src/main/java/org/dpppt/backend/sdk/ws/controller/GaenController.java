@@ -10,7 +10,6 @@
 package org.dpppt.backend.sdk.ws.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.jsonwebtoken.Jwts;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.dpppt.backend.sdk.data.gaen.FakeKeyService;
 import org.dpppt.backend.sdk.data.gaen.GAENDataService;
 import org.dpppt.backend.sdk.model.gaen.*;
+import org.dpppt.backend.sdk.utils.UTCInstant;
 import org.dpppt.backend.sdk.ws.radarcovid.annotation.Loggable;
 import org.dpppt.backend.sdk.ws.radarcovid.annotation.ResponseRetention;
 import org.dpppt.backend.sdk.ws.security.ValidateRequest;
@@ -54,6 +54,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -66,6 +67,7 @@ import java.util.concurrent.Callable;
  * Clients can send new Exposed Keys, or request the existing Exposed Keys.
  */
 public class GaenController {
+
 	private static final Logger logger = LoggerFactory.getLogger(GaenController.class);
 	private static final String FAKE_CODE = "112358132134";
 
@@ -85,10 +87,12 @@ public class GaenController {
 	private final Duration exposedListCacheControl;
 	private final PrivateKey secondDayKey;
 	private final ProtoSignature gaenSigner;
+	private final String countryOrigin;
+	private final Integer reportType;
 
 	public GaenController(GAENDataService dataService, FakeKeyService fakeKeyService, ValidateRequest validateRequest,
 						  ProtoSignature gaenSigner, ValidationUtils validationUtils, Duration releaseBucketDuration, Duration requestTime,
-						  Duration exposedListCacheControl, PrivateKey secondDayKey) {
+						  Duration exposedListCacheControl, PrivateKey secondDayKey, String countryOrigin, Integer reportType) {
 		this.dataService = dataService;
 		this.fakeKeyService = fakeKeyService;
 		this.releaseBucketDuration = releaseBucketDuration;
@@ -98,6 +102,8 @@ public class GaenController {
 		this.exposedListCacheControl = exposedListCacheControl;
 		this.secondDayKey = secondDayKey;
 		this.gaenSigner = gaenSigner;
+		this.countryOrigin = countryOrigin;
+		this.reportType = reportType;
 	}
 
 	@PostMapping(value = "/exposed")
@@ -121,6 +127,17 @@ public class GaenController {
 			return () -> ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
+		// {{{ Radar COVID - EFGS
+		Jwt token = null;
+		boolean efgsSharing = false;
+		String onsetDay = LocalDate.now().toString();
+		if (principal instanceof Jwt && ((Jwt) principal).containsClaim("onset")) {
+			token = (Jwt) principal;
+			onsetDay = token.getClaimAsString("onset");
+			efgsSharing = token.containsClaim("efgs") && token.getClaimAsBoolean("efgs");
+		}
+		// }}} Radar COVID - EFGS
+
 		List<GaenKey> nonFakeKeys = new ArrayList<>();
 		for (var key : gaenRequest.getGaenKeys()) {
 			if (!validationUtils.isValidBase64Key(key.getKeyData())) {
@@ -131,6 +148,13 @@ public class GaenController {
 				|| hasInvalidKeyDate(principal, key)) {
 				continue;
 			}
+
+			// {{{ Radar COVID - EFGS
+			key.setCountryOrigin(countryOrigin);
+			key.setEfgsSharing(efgsSharing);
+			key.setReportType(reportType);
+			key.setDaysSinceOnsetOfSymptons(daysSinceOnsetOfSymtoms(onsetDay, key.getRollingStartNumber()));
+			// }}} Radar COVID - EFGS
 
 			if (key.getRollingPeriod().equals(0)) {
 				//currently only android seems to send 0 which can never be valid, since a non used key should not be submitted
@@ -144,14 +168,8 @@ public class GaenController {
 			nonFakeKeys.add(key);
 		}
 
-		if (principal instanceof Jwt && ((Jwt) principal).containsClaim("fake")
-				&& ((Jwt) principal).getClaimAsString("fake").equals("1")) {
-			Jwt token = (Jwt) principal;
-			if (FAKE_CODE.equals(token.getSubject())) {
-				logger.debug("Claim is fake - subject: {}", token.getSubject());
-			} else if (!nonFakeKeys.isEmpty()) {
-				return () -> ResponseEntity.badRequest().body("Claim is fake but list contains non fake keys");
-			}
+		if (token != null && token.containsClaim("fake") && token.getClaimAsString("fake").equals("1") && !nonFakeKeys.isEmpty()) {
+			return () -> ResponseEntity.badRequest().body("Claim is fake but list contains non fake keys");
 		}
 
 		if (!nonFakeKeys.isEmpty()) {
@@ -174,7 +192,8 @@ public class GaenController {
 					.setIssuer("dpppt-sdk-backend").setSubject(originalJWT.getSubject())
 					.setExpiration(Date
 							.from(delayedKeyDate.atStartOfDay().toInstant(ZoneOffset.UTC).plus(Duration.ofHours(48))))
-					.claim("scope", "currentDayExposed").claim("delayedKeyDate", gaenRequest.getDelayedKeyDate());
+					.claim("scope", "currentDayExposed").claim("delayedKeyDate", gaenRequest.getDelayedKeyDate())
+					.claim("onset", onsetDay);
 			if (originalJWT.containsClaim("fake")) {
 				jwtBuilder.claim("fake", originalJWT.getClaim("fake"));
 			}
@@ -205,7 +224,19 @@ public class GaenController {
 			@Valid @RequestBody @Parameter(description = "The last exposed key of the user") GaenSecondDay gaenSecondDay,
 			@RequestHeader(value = "User-Agent") @Parameter(description = "App Identifier (PackageName/BundleIdentifier) + App-Version + OS (Android/iOS) + OS-Version", example = "ch.ubique.android.starsdk;1.0;iOS;13.3") String userAgent,
 			@AuthenticationPrincipal @Parameter(description = "JWT token that can be verified by the backend server, must have been created by /v1/gaen/exposed and contain the delayedKeyDate") Object principal) {
+
 		var now = Instant.now().toEpochMilli();
+
+		// {{{ Radar COVID - EFGS
+		Jwt token = null;
+		boolean efgsSharing = false;
+		String onsetDay = LocalDate.now().toString();
+		if (principal instanceof Jwt && ((Jwt) principal).containsClaim("onset")) {
+			token = (Jwt) principal;
+			onsetDay = token.getClaimAsString("onset");
+			efgsSharing = token.containsClaim("efgs") && token.getClaimAsBoolean("efgs");
+		}
+		// }}} Radar COVID - EFGS
 
 		if (!validationUtils.isValidBase64Key(gaenSecondDay.getDelayedKey().getKeyData())) {
 			return () -> new ResponseEntity<>("No valid base64 key", HttpStatus.BAD_REQUEST);
@@ -222,6 +253,14 @@ public class GaenController {
 		}
 
 		if (!this.validateRequest.isFakeRequest(principal, gaenSecondDay.getDelayedKey())) {
+
+			// {{{ Radar COVID - EFGS
+			gaenSecondDay.getDelayedKey().setCountryOrigin(countryOrigin);
+			gaenSecondDay.getDelayedKey().setEfgsSharing(efgsSharing);
+			gaenSecondDay.getDelayedKey().setReportType(reportType);
+			gaenSecondDay.getDelayedKey().setDaysSinceOnsetOfSymptons(daysSinceOnsetOfSymtoms(onsetDay, UTCInstant.now().get10MinutesSince1970()));
+			// }}} Radar COVID - EFGS
+
 			if (gaenSecondDay.getDelayedKey().getRollingPeriod().equals(0)) {
 				// currently only android seems to send 0 which can never be valid, since a non used key should not be submitted
 				// default value according to EN is 144, so just set it to that. If we ever get 0 from iOS we should log it, since
@@ -347,6 +386,14 @@ public class GaenController {
 		}
 		return false;
 	}
+
+	// {{{ Radar COVID - EFGS
+	private long daysSinceOnsetOfSymtoms(String dateAsString, long rollingStartNumber) {
+		var onset = UTCInstant.parseDate(dateAsString);
+		var rollingDate = UTCInstant.midnight1970().plus(GaenUnit.TenMinutes.getDuration().multipliedBy(rollingStartNumber));
+		return ChronoUnit.DAYS.between(rollingDate.getLocalDate(), onset.getLocalDate());
+	}
+	// }}} Radar COVID - EFGS
 
 	@ExceptionHandler({IllegalArgumentException.class, InvalidDateException.class, JsonProcessingException.class,
 			MethodArgumentNotValidException.class, BadBatchReleaseTimeException.class, DateTimeParseException.class})

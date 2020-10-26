@@ -1,22 +1,22 @@
 package org.dpppt.backend.sdk.data.gaen;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-
 import org.dpppt.backend.sdk.model.gaen.GaenKey;
 import org.dpppt.backend.sdk.model.gaen.GaenUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+
 public class FakeKeyService {
+
+	private static final Long EFGS_DEFAULT_DAYS_SINCE_ONSET_OF_SYMPTOMS = 1L;
+	private static final Boolean EFGS_DEFAULT_SHARING = Boolean.FALSE;
+
 
 	private final GAENDataService dataService;
 	private final Integer minNumOfKeys;
@@ -24,17 +24,21 @@ public class FakeKeyService {
 	private final Integer keySize;
 	private final Duration retentionPeriod;
 	private final boolean isEnabled;
+	private final String countryOrigin;
+	private final Integer reportType;
 
 	private static final Logger logger = LoggerFactory.getLogger(FakeKeyService.class);
 
 	public FakeKeyService(GAENDataService dataService, Integer minNumOfKeys, Integer keySize, Duration retentionPeriod,
-			boolean isEnabled) throws NoSuchAlgorithmException {
+			boolean isEnabled, String countryOrigin, Integer reportType) throws NoSuchAlgorithmException {
 		this.dataService = dataService;
 		this.minNumOfKeys = minNumOfKeys;
 		this.random = new SecureRandom();
 		this.keySize = keySize;
 		this.retentionPeriod = retentionPeriod;
 		this.isEnabled = isEnabled;
+		this.countryOrigin = countryOrigin;
+		this.reportType = reportType;
 		this.updateFakeKeys();
 	}
 
@@ -51,7 +55,8 @@ public class FakeKeyService {
 				var keyGAENTime = (int) Duration.ofSeconds(tmpDate.toEpochSecond(LocalTime.MIDNIGHT, ZoneOffset.UTC))
 						.dividedBy(GaenUnit.TenMinutes.getDuration());
 
-				var key = new GaenKey(Base64.getEncoder().encodeToString(keyData), keyGAENTime, GaenKey.GaenKeyDefaultRollingPeriod, 0);
+				var key = new GaenKey(Base64.getEncoder().encodeToString(keyData), keyGAENTime, GaenKey.GaenKeyDefaultRollingPeriod, 0,
+									  countryOrigin, reportType, EFGS_DEFAULT_DAYS_SINCE_ONSET_OF_SYMPTOMS, EFGS_DEFAULT_SHARING);
 				keys.add(key);
 			}
 			this.dataService.upsertExposees(keys);

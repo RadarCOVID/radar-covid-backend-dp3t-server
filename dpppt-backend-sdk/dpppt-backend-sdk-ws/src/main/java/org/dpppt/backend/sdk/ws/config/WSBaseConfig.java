@@ -142,6 +142,12 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 	@Value("${datasource.schema:}")
 	String dataSourceSchema;
 
+	@Value("${ws.app.efgs.country-origin:ES}")
+	String efgsCountryOrigin;
+
+	@Value("${ws.app.efgs.report-type:1}")
+	int efgsReportType;
+
 	@Autowired(required = false)
 	@Lazy
 	ValidateRequest requestValidator;
@@ -182,7 +188,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 			flyWay.migrate();
 			GAENDataService fakeGaenService = new JDBCGAENDataServiceImpl("hsql", fakeDataSource,Duration.ofMillis(releaseBucketDuration));
 			return new FakeKeyService(fakeGaenService, Integer.valueOf(randomkeyamount),
-					Integer.valueOf(gaenKeySizeBytes), Duration.ofDays(retentionDays), randomkeysenabled);
+					Integer.valueOf(gaenKeySizeBytes), Duration.ofDays(retentionDays), randomkeysenabled, efgsCountryOrigin, efgsReportType);
 		} catch (Exception ex) {
 			throw new RuntimeException("FakeKeyService could not be instantiated", ex);
 		}
@@ -246,7 +252,8 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 		}
 		return new GaenController(gaenDataService(), fakeKeyService(), theValidator, gaenSigner(),
 				gaenValidationUtils(), Duration.ofMillis(releaseBucketDuration), Duration.ofMillis(requestTime),
-				Duration.ofMillis(exposedListCacheControl), keyVault.get("nextDayJWT").getPrivate());
+				Duration.ofMillis(exposedListCacheControl), keyVault.get("nextDayJWT").getPrivate(),
+				efgsCountryOrigin, efgsReportType);
 	}
 
 	@Bean
