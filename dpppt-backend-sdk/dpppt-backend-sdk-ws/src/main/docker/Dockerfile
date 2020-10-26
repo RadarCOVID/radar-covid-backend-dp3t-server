@@ -7,7 +7,7 @@ LABEL module.maintainer="DP3T" \
 RUN useradd ws
 
 COPY [ "${project.build.finalName}-exec.jar", "/home/ws/app.jar" ]
-COPY [ "*.yml", "/home/ws/" ]
+#COPY [ "*.yml", "/home/ws/" ]
 
 VOLUME [ "/tmp" ]
 
@@ -25,4 +25,5 @@ ENV JAVA_OPTS="$JAVA_OPTS -Xms256M -Xmx1G" \
 USER ws
 EXPOSE ${SERVER_PORT}
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.config.location=/home/ws/ -Dspring.profiles.active=${build.profile.id},jwt -jar /home/ws/app.jar" ]
+#ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.config.location=/home/ws/ -Dspring.profiles.active=${build.profile.id},jwt -jar /home/ws/app.jar" ]
+ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=${build.profile.id},jwt -jar /home/ws/app.jar" ]
