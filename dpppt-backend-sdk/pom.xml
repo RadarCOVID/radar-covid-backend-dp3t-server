@@ -28,7 +28,7 @@
 		<maven.compiler.source>${java-version}</maven.compiler.source>
 		<maven.compiler.target>${java-version}</maven.compiler.target>
 
-		<spring-boot-version>2.2.9.RELEASE</spring-boot-version>
+		<spring-boot-version>2.2.10.RELEASE</spring-boot-version>
 		<spring-cloud-version>Hoxton.SR8</spring-cloud-version>
 		<spring-cloud-starter-aws.version>2.2.4.RELEASE</spring-cloud-starter-aws.version>
 		<spring-framework-version>5.2.8.RELEASE</spring-framework-version>
@@ -39,12 +39,10 @@
 		<jackson-version>2.11.1</jackson-version>
 		<jsonwebtoken-version>0.11.2</jsonwebtoken-version>
 		<micrometer-registry-cloudwatch2.version>1.5.5</micrometer-registry-cloudwatch2.version>
-		<postgresql-version>42.2.13</postgresql-version>
 		<protobuf-java-version>3.12.1</protobuf-java-version>
 		<shedlock.version>4.14.0</shedlock.version>
 		<snakeyaml-version>1.26</snakeyaml-version>
 		<springdoc-openapi-version>1.4.0</springdoc-openapi-version>
-		<tomcat-version>9.0.36</tomcat-version>
 
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<!--suppress UnresolvedMavenProperty -->
@@ -128,16 +126,17 @@
 				<scope>import</scope>
 			</dependency>
 
+			<!-- d3pt models -->
 			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-core</artifactId>
-				<version>${spring-framework-version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
+				<groupId>org.dpppt</groupId>
+				<artifactId>dpppt-backend-sdk-model</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.dpppt</groupId>
+				<artifactId>dpppt-backend-sdk-data</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 			<!-- AWS -->
@@ -173,11 +172,6 @@
 				<version>${jsonwebtoken-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.postgresql</groupId>
-				<artifactId>postgresql</artifactId>
-				<version>${postgresql-version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.springdoc</groupId>
 				<artifactId>springdoc-openapi-webmvc-core</artifactId>
 				<version>${springdoc-openapi-version}</version>
@@ -198,21 +192,6 @@
 				<version>${snakeyaml-version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${tomcat-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${tomcat-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${tomcat-version}</version>
-			</dependency>
-			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
 				<version>${jackson-version}</version>
@@ -228,14 +207,20 @@
 				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.hubspot.jackson</groupId>
+				<artifactId>jackson-datatype-protobuf</artifactId>
+				<version>0.9.12</version>
+			</dependency>
+
+			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-spring-retry</artifactId>
-				<version>1.0.3.RELEASE</version>
+				<version>1.0.4.RELEASE</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-				<version>1.0.3.RELEASE</version>
+				<version>1.0.4.RELEASE</version>
 			</dependency>
 			<dependency>
 				<groupId>joda-time</groupId>
@@ -246,13 +231,11 @@
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjrt</artifactId>
 				<version>${aspectj-version}</version>
-				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjweaver</artifactId>
 				<version>${aspectj-version}</version>
-				<scope>compile</scope>
 			</dependency>
 			<dependency>
 				<groupId>net.javacrumbs.shedlock</groupId>
