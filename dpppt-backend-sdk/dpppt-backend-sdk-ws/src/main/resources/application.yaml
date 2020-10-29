@@ -15,24 +15,29 @@ spring:
   sleuth:
     log.slf4j:
       enabled: true
-      whitelisted-mdc-keys:
-        - X-Amz-Cf-Id
     keys.http.headers: X-Amz-Cf-Id
-    propagation-keys:
-      - X-Amz-Cf-Id
     baggage:
       remote-fields: X-Amz-Cf-Id
       correlation-fields: X-Amz-Cf-Id
 
 cloud:
   aws:
+    credentials:
+      access-key: ${AWS_ACCESS_KEY_ID:}
+      secret-key: ${AWS_SECRET_KEY:}
     region:
       auto: ${CLOUD.AWS.REGION.AUTO:false}
       static: ${CLOUD.AWS.REGION.STATIC:eu-west-1}
     stack:
       auto: ${CLOUD.AWS.STACK.AUTO:false}
 
-management.endpoints.enabled-by-default: false
+management:
+  endpoints.enabled-by-default: false
+  metrics:
+    export:
+      cloudwatch:
+        namespace: dpppt
+        batch-size: 20
 
 server:
   error.whitelabel.enabled: true
@@ -46,6 +51,8 @@ server:
   http2:
     enabled: true
   port: ${SERVER_PORT:8080}
+  tomcat:
+    max-threads: 225
 
 logging:
   group:
@@ -62,10 +69,13 @@ logging:
     com.amazonaws: error
     org.dpppt.backend.sdk.data.gaen.fakekeyservice: info
     org.dpppt.backend.sdk.ws.radarcovid: debug
-    org.dpppt.backend.sdk.ws.radarcovid.config: info
     org.dpppt.backend.sdk.ws.radarcovid.annotation: info
+    org.dpppt.backend.sdk.ws.radarcovid.config: info
     org.dpppt.backend.sdk.ws.security.gaen: debug
     org.dpppt: info
+#    com.zaxxer.hikari.pool.HikariPool: debug
+#    com.zaxxer.hikari.HikariConfig: debug
+    com.zaxxer.hikari: debug
   pattern:
     console: '[%-5level] [%X{X-B3-TraceId:-},%X{X-Amz-Cf-Id:-}] - %c{1} - %msg%n'
 
@@ -108,6 +118,9 @@ ws:
     jwt:
       algorithm: ${WS_APP_JWT_ALGORITHM:EC}
       publickey: ${WS_APP_JWT_PUBLICKEY:LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlHYk1CQUdCeXFHU000OUFnRUdCU3VCQkFBakE0R0dBQVFCYndNcHNzcFRPRHhJSVYvU3VsbGdTNFRUWTNBVgpmNjYrYUgyVkNXWmFDM2k1b2dmcW8yT1JJQ1FoZkc2MHdWRHp1U2pCQklaaTYxbVZ3QXk1cXJUS0hib0F4QzFpCnJibk1YOG9rUSthamZHRy80UE1yOWpoVHFKamkzY3ZDeU4xQWY2RWY3Z0p6WEtSYVhmdWFyTFRNVWZvV2NXMkkKWXBFOXROSXMzSExmUGczSHJpRT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==}
+    efgs:
+      country-origin: ${WS_APP_EFGS_COUNTRY:ES}
+      report-type: ${WS_APP_EFGS_REPORT_TYPE:1}
   headers:
     protected: ${WS_HEADERS_PROTECTED:X-HELLO,X-BATCH-RELEASE-TIME}
     debug: ${WS_HEADERS_DEBUG:true}
@@ -130,7 +143,8 @@ application:
     title: DP3T API
     description: DP3T API
     version: '@project.version@'
-    terms-of-service: http://sedia.com/
+    server: 'https://radarcovid.covid19.gob.es'
+    terms-of-service: https://radarcovid.covid19.gob.es/terms-of-service/use-conditions.html
   endpoint:
     validation:
       url: ${TAN_VALIDATION_URL:}
@@ -141,6 +155,5 @@ application:
       time:
         exposed: ${RESPONSE_RETENTION_TIME_EXPOSED:1000} # milliseconds
         exposednextday: ${RESPONSE_RETENTION_TIME_EXPOSEDNEXTDAY:1000} # milliseconds
-
   log:
-    enabled: ${LOGGABLE_ENABLED:true}
+    enabled: ${LOGGABLE_ENABLED:false}
