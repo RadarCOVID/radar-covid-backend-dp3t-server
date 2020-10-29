@@ -57,10 +57,11 @@ public class JWTValidateRequest implements ValidateRequest {
 
     private boolean checkTanClaim(Jwt token) {
         boolean result = true;
-        if (validationEnabled && !isFakeToken(token)) {
-            String tan = token.containsClaim(CLAIM_TAN) ? (String) token.getClaim(CLAIM_TAN) : "";
+        boolean isFake = isFakeToken(token);
+        String tan = token.containsClaim(CLAIM_TAN) ? (String) token.getClaim(CLAIM_TAN) : "";
+        if (validationEnabled && !isFake) {
             result = StringUtils.isNoneEmpty(tan) && validationClientService.validate(tan);
-            logger.info("checkTan = {}", result);
+            logger.debug("Verify tan ({}) = {}", tan, result); // Only for debugging purposes
         }
         return result;
     }
