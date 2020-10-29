@@ -98,6 +98,11 @@ Licensor:  Google Inc.
 Website:   https://developers.google.com/protocol-buffers/
 License:   3-Clause BSD License
 
+Component: Micrometer Application Monitoring
+Licensor:  Pivotal Software Inc.
+Website:   https://micrometer.io/
+License:   Apache License, Version 2.0
+
 --------------------------------------------------------------------------------
 
 Apache License 2.0

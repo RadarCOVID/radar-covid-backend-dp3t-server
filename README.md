@@ -42,6 +42,13 @@ Where `<environment>` has these possible values:
 - `radarcovid-pre`. To run the application in the Preproduction environment.  Preproduction environment properties are configured in the infrastructure.
 - `radarcovid-pro`. To run the application in the Production environment.  Production environment properties are configured in the infrastructure.
 
+The project also uses Maven profile `aws-env` to include dependencies when it is running on AWS environment, so the compilation command for Preproduction and Production environments would be:
+
+```shell
+mvn clean package -P radarcovid-env,aws-env
+mvn clean package -P radarcovid-pro,aws-env
+```
+
 All profiles will load the default [configuration](./dpppt-backend-sdk/dpppt-backend-sdk-ws/src/main/docker/application.yml).
 
 Application uses [The Twelve-Factor App - Config](https://12factor.net/config) approach so configuration is stored in _environment variables_.
