@@ -34,6 +34,8 @@ cloud:
 management:
   endpoints.enabled-by-default: false
   metrics:
+    enable:
+      all: true
     export:
       cloudwatch:
         namespace: dpppt
@@ -52,7 +54,13 @@ server:
     enabled: true
   port: ${SERVER_PORT:8080}
   tomcat:
-    max-threads: 225
+#    max-threads: 125
+#    accept-count: 0
+#    connection-timeout: 5s
+#    max-connections: 125
+#    min-spare-threads: 10
+    mbeanregistry:
+      enabled: true
 
 logging:
   group:
@@ -73,9 +81,6 @@ logging:
     org.dpppt.backend.sdk.ws.radarcovid.config: info
     org.dpppt.backend.sdk.ws.security.gaen: debug
     org.dpppt: info
-#    com.zaxxer.hikari.pool.HikariPool: debug
-#    com.zaxxer.hikari.HikariConfig: debug
-    com.zaxxer.hikari: debug
   pattern:
     console: '[%-5level] [%X{X-B3-TraceId:-},%X{X-Amz-Cf-Id:-}] - %c{1} - %msg%n'
 
@@ -84,12 +89,14 @@ logging:
 #-------------------------------------------------------------------------------
 datasource:
   url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/dpppt}
+  reader-url: ${DATASOURCE_READER_URL:jdbc:postgresql://localhost:5432/dpppt}
   username: ${DATASOURCE_USER:dpppt}
   password: ${DATASOURCE_PASS:dpppt}
   schema: ${DATASOURCE_SCHEMA:dpppt}
   driverClassName: org.postgresql.ds.PGSimpleDataSource
   failFast: ${DATASOURCE_FAIL_FAST:true}
-  maximumPoolSize: ${DATASOURCE_MAX_POOL_SIZE:5}
+  minimumIdle: ${DATASOURCE_MIN_IDLE:5}
+  maximumPoolSize: ${DATASOURCE_MAX_POOL_SIZE:15}
   maxLifetime: ${DATASOURCE_MAX_LIFE_TIME:1700000}
   idleTimeout: ${DATASOURCE_IDLE_TIMEOUT:600000}
   connectionTimeout: ${DATASOURCE_CONNECTION_TIMEOUT:30000}
