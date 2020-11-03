@@ -11,13 +11,8 @@
 
 package org.dpppt.backend.sdk.ws.config;
 
-import java.time.Duration;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.dpppt.backend.sdk.data.gaen.DebugGAENDataService;
 import org.dpppt.backend.sdk.data.gaen.DebugJDBCGAENDataServiceImpl;
 import org.dpppt.backend.sdk.ws.controller.DebugController;
@@ -36,8 +31,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+import javax.sql.DataSource;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Properties;
 
 @Configuration
 @Profile({"radarcovid-local","radarcovid-pre","radarcovid-pro"})
@@ -52,6 +50,9 @@ public class WSSediaConfig extends WSBaseConfig {
 	@Value("${datasource.url}")
 	String dataSourceUrl;
 
+	@Value("${datasource.reader-url}")
+	String dataSourceReaderUrl;
+
 	@Value("${datasource.schema}")
 	String dataSourceSchema;
 	
@@ -61,8 +62,11 @@ public class WSSediaConfig extends WSBaseConfig {
 	@Value("${datasource.failFast}")
 	String dataSourceFailFast;
 
-	@Value("${datasource.maximumPoolSize}")
-	String dataSourceMaximumPoolSize;
+	@Value("${datasource.minimumIdle:5}")
+	int datasSourceMinimumIdle;
+
+	@Value("${datasource.maximumPoolSize:20}")
+	int dataSourceMaximumPoolSize;
 
 	@Value("${datasource.maxLifetime}")
 	String dataSourceMaxLifetime;
@@ -79,21 +83,46 @@ public class WSSediaConfig extends WSBaseConfig {
 	@Value("${ws.ecdsa.credentials.publicKey:}")
     public String publicKey;
 
+	@Override
 	@Bean(destroyMethod = "close")
 	public DataSource dataSource() {
-		HikariConfig config = new HikariConfig();
+		return connectionPoolDataSource(dataSourceUrl);
+	}
+
+//	//@Bean(destroyMethod = "close")
+//	public DataSource readWriteDataSource() {
+//		return connectionPoolDataSource(dataSourceUrl);
+//	}
+//
+//	//@Bean(destroyMethod = "close")
+//	public DataSource readOnlyDataSource() {
+//		return connectionPoolDataSource(dataSourceReaderUrl);
+//	}
+//
+//	@Bean
+//	public DataSource dataSource() {
+//		return new MasterReplicaRoutingDataSource(readWriteDataSource(), readOnlyDataSource());
+//	}
+
+	protected HikariConfig hikariConfig(String url) {
 		Properties props = new Properties();
-		props.put("url", dataSourceUrl);
+		props.put("url", url);
 		props.put("user", dataSourceUser);
 		props.put("password", dataSourcePassword);
+		HikariConfig config = new HikariConfig();
 		config.setDataSourceProperties(props);
 		config.setDataSourceClassName(dataSourceDriver);
 		config.setSchema(dataSourceSchema);
-		config.setMaximumPoolSize(Integer.parseInt(dataSourceMaximumPoolSize));
+		config.setMinimumIdle(datasSourceMinimumIdle);
+		config.setMaximumPoolSize(dataSourceMaximumPoolSize);
 		config.setMaxLifetime(Integer.parseInt(dataSourceMaxLifetime));
 		config.setIdleTimeout(Integer.parseInt(dataSourceIdleTimeout));
 		config.setConnectionTimeout(Integer.parseInt(dataSourceConnectionTimeout));
-		return new HikariDataSource(config);
+		return config;
+	}
+
+	protected HikariDataSource connectionPoolDataSource(String url) {
+		return new HikariDataSource(hikariConfig(url));
 	}
 
 	@Bean
