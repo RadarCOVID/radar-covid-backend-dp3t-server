@@ -15,7 +15,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 // JVM handles shut down
 public class SingletonPostgresContainer {
 
-    private static final String IMAGE_VERSION = "postgres:12";
+    private static final String IMAGE_VERSION = "postgres:12-alpine";
     private static final String DB_URL = "DB_URL";
     private static final String DB_PORT = "DB_PORT";
     private static final String DB_USERNAME = "DB_USERNAME";
