@@ -1,4 +1,4 @@
-FROM adoptopenjdk:11-jre-hotspot
+FROM adoptopenjdk:11-jre-openj9
 
 # Metadata
 LABEL module.maintainer="DP3T" \
@@ -19,7 +19,7 @@ ENV AWS_ACCESS_KEY_ID ${AWS_ACCESS_KEY}
 ENV AWS_SECRET_KEY ${AWS_SECRET_KEY} 
 ENV AWS_PARAMSTORE_ENABLED ${AWS_PARAMSTORE_ENABLED}
 		
-ENV JAVA_OPTS="$JAVA_OPTS -Xms256M -Xmx1G" \
+ENV JAVA_OPTS="$JAVA_OPTS -Xms256M -Xmx1536M" \
     SERVER_PORT=8080
 
 USER ws
