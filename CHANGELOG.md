@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Index in table t_gaen_exposed.
+- Added Micrometer connecting with CloudWatch.
+- Added minimum idle database connection.
+
+### Changed
+
+- Changed PostgreSQL Docker image from postgres:12 to postgres:12-alpine in testing.
+- In Docker container, changed JRE 11 from HotSpot to OpenJ9 and applied more memory (from 1GB to 1.5GB).
+
+### Fixed
+
+## [1.1.2.RELEASE] - 2020-10-29
+
 ### Added
 
 - Setted responses retention time on fake requests.
