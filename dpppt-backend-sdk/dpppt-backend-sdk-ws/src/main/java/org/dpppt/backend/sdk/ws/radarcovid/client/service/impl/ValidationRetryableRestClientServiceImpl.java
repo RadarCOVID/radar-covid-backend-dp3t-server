@@ -53,7 +53,7 @@ public class ValidationRetryableRestClientServiceImpl implements ValidationRestC
         try {
             ResponseEntity<Void> response = restTemplate.postForEntity(validationUrl, httpEntity, Void.class);
             result = (response != null && response.getStatusCode().is2xxSuccessful());
-            logger.debug("Validating {} with result {}", tanString, result);
+            logger.info("Validating {} with result {}", tanString, result);
         } catch (HttpClientErrorException ex) {
             if (ex.getStatusCode() != HttpStatus.NOT_FOUND) {
                 logger.warn("Exception invoking verification ({}): {}", ex.getStatusCode(), ex.getMessage(), ex);

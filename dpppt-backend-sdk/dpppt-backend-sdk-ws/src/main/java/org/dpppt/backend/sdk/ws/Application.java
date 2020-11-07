@@ -16,20 +16,17 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@ComponentScan(basePackages = { "org.dpppt.backend.sdk.ws.config", "org.dpppt.backend.sdk.ws.radarcovid.config" })
-@EnableAutoConfiguration(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
-@EnableAspectJAutoProxy
+@ComponentScan(basePackages = {"org.dpppt.backend.sdk.ws.config",
+                               "org.dpppt.backend.sdk.ws.radarcovid.config"})
+@EnableAutoConfiguration(
+    exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
 @EnableWebMvc
-@EnableRetry
 public class Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(Application.class);
+  }
 }
