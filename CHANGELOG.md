@@ -9,11 +9,13 @@ All notable changes to this project will be documented in this file.
 - Index in table t_gaen_exposed.
 - Added Micrometer connecting with CloudWatch.
 - Added minimum idle database connection.
+- Added [efficient Docker images with Spring Boot 2.3](https://spring.io/blog/2020/08/14/creating-efficient-docker-images-with-spring-boot-2-3).
 
 ### Changed
 
 - Changed PostgreSQL Docker image from postgres:12 to postgres:12-alpine in testing.
 - In Docker container, changed JRE 11 from HotSpot to OpenJ9 and applied more memory (from 1GB to 1.5GB).
+- Changed to 2.0.1 DP3T Backend release.
 
 ### Fixed
 
