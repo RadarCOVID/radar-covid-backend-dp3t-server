@@ -9,49 +9,42 @@
   -->
 
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.dpppt</groupId>
 	<artifactId>dpppt-backend-sdk</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>2.0.2.ES-SNAPSHOT</version>
 	<name>DP3T Backend SDK</name>
 
 	<properties>
+		<java-version>11</java-version>
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-		<java-version>11</java-version>
-		<maven.compiler.source>${java-version}</maven.compiler.source>
-		<maven.compiler.target>${java-version}</maven.compiler.target>
-
-		<spring-boot-version>2.2.10.RELEASE</spring-boot-version>
-		<spring-cloud-version>Hoxton.SR8</spring-cloud-version>
-		<spring-cloud-starter-aws.version>2.2.4.RELEASE</spring-cloud-starter-aws.version>
-		<spring-framework-version>5.2.8.RELEASE</spring-framework-version>
-
-		<itCoverageAgent></itCoverageAgent>
-		<aspectj-version>1.9.6</aspectj-version>
-		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<jackson-version>2.11.1</jackson-version>
 		<jsonwebtoken-version>0.11.2</jsonwebtoken-version>
-		<micrometer-registry-cloudwatch2.version>1.5.5</micrometer-registry-cloudwatch2.version>
+		<micrometer-registry-cloudwatch2-version>1.5.5</micrometer-registry-cloudwatch2-version>
 		<protobuf-java-version>3.12.1</protobuf-java-version>
-		<shedlock.version>4.14.0</shedlock.version>
-		<snakeyaml-version>1.26</snakeyaml-version>
-		<springdoc-openapi-version>1.4.0</springdoc-openapi-version>
+		<shedlock-version>4.14.0</shedlock-version>
+		<spring-boot-version>2.3.5.RELEASE</spring-boot-version>
+		<spring-cloud-version>Hoxton.SR8</spring-cloud-version>
+		<spring-cloud-starter-aws-version>2.2.4.RELEASE</spring-cloud-starter-aws-version>
+		<spring-cloud-starter-circuitbreaker-version>1.0.4.RELEASE</spring-cloud-starter-circuitbreaker-version>
+		<testcontainers-version>1.15.0-rc2</testcontainers-version>
+
+		<itCoverageAgent></itCoverageAgent>
+
+		<build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
 
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<!--suppress UnresolvedMavenProperty -->
 		<sonar.organization>${env.SONAR_ORGANIZATION}</sonar.organization>
-		<!--suppress UnresolvedMavenProperty -->
 		<sonar.login>${env.SONAR_TOKEN}</sonar.login>
-		<sonar.coverage.jacoco.xmlReportPaths>
-			${project.basedir}/../dpppt-backend-sdk-report/target/site/jacoco-aggregate/jacoco.xml
-		</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/../dpppt-backend-sdk-report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 	</properties>
 
 	<modules>
@@ -82,7 +75,6 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
 		</dependency>
 
 		<dependency>
@@ -104,7 +96,6 @@
 		<dependency>
 			<groupId>com.google.protobuf</groupId>
 			<artifactId>protobuf-java</artifactId>
-			<version>${protobuf-java-version}</version>
 		</dependency>
 
 	</dependencies>
@@ -126,16 +117,20 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- d3pt models -->
+			<!-- dp3t models -->
 			<dependency>
 				<groupId>org.dpppt</groupId>
 				<artifactId>dpppt-backend-sdk-model</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.dpppt</groupId>
 				<artifactId>dpppt-backend-sdk-data</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.dpppt</groupId>
+				<artifactId>dpppt-backend-sdk-ws</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -143,19 +138,38 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-aws-actuator</artifactId>
-				<version>${spring-cloud-starter-aws.version}</version>
+				<version>${spring-cloud-starter-aws-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-aws-parameter-store-config</artifactId>
-				<version>${spring-cloud-starter-aws.version}</version>
+				<version>${spring-cloud-starter-aws-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>io.micrometer</groupId>
 				<artifactId>micrometer-registry-cloudwatch2</artifactId>
-				<version>${micrometer-registry-cloudwatch2.version}</version>
+				<version>${micrometer-registry-cloudwatch2-version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>ch.ubique.openapi</groupId>
+				<artifactId>doc-annotations</artifactId>
+				<version>1.0.1</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.8.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>${protobuf-java-version}</version>
+			</dependency>
+
+			<!-- JSON Web Token -->
 			<dependency>
 				<groupId>io.jsonwebtoken</groupId>
 				<artifactId>jjwt-api</artifactId>
@@ -171,34 +185,11 @@
 				<artifactId>jjwt-impl</artifactId>
 				<version>${jsonwebtoken-version}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.springdoc</groupId>
-				<artifactId>springdoc-openapi-webmvc-core</artifactId>
-				<version>${springdoc-openapi-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springdoc</groupId>
-				<artifactId>springdoc-openapi-ui</artifactId>
-				<version>${springdoc-openapi-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springdoc</groupId>
-				<artifactId>springdoc-openapi-security</artifactId>
-				<version>${springdoc-openapi-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.yaml</groupId>
-				<artifactId>snakeyaml</artifactId>
-				<version>${snakeyaml-version}</version>
-			</dependency>
+
+			<!-- Jackson -->
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
-				<version>${jackson-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
 				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
@@ -207,61 +198,102 @@
 				<version>${jackson-version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-jsonSchema</artifactId>
+				<version>${jackson-version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jsr310</artifactId>
+				<version>${jackson-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.bouncycastle</groupId>
+				<artifactId>bcpkix-jdk15on</artifactId>
+				<version>1.66</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.security.oauth</groupId>
+				<artifactId>spring-security-oauth2</artifactId>
+				<version>2.4.0.RELEASE</version>
+			</dependency>
+
+			<dependency>
 				<groupId>com.hubspot.jackson</groupId>
 				<artifactId>jackson-datatype-protobuf</artifactId>
 				<version>0.9.12</version>
 			</dependency>
 
 			<dependency>
+				<groupId>org.testcontainers</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${testcontainers-version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>1.27</version>
+			</dependency>
+
+			<!-- CircuitBreaker pattern -->
+			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-spring-retry</artifactId>
-				<version>1.0.4.RELEASE</version>
+				<version>${spring-cloud-starter-circuitbreaker-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-				<version>1.0.4.RELEASE</version>
+				<version>${spring-cloud-starter-circuitbreaker-version}</version>
 			</dependency>
-			<dependency>
-				<groupId>joda-time</groupId>
-				<artifactId>joda-time</artifactId>
-				<version>2.10.6</version>
-			</dependency>
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjrt</artifactId>
-				<version>${aspectj-version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjweaver</artifactId>
-				<version>${aspectj-version}</version>
-			</dependency>
+
+			<!-- ShedLock -->
 			<dependency>
 				<groupId>net.javacrumbs.shedlock</groupId>
 				<artifactId>shedlock-provider-jdbc-template</artifactId>
-				<version>${shedlock.version}</version>
+				<version>${shedlock-version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.javacrumbs.shedlock</groupId>
 				<artifactId>shedlock-spring</artifactId>
-				<version>${shedlock.version}</version>
+				<version>${shedlock-version}</version>
 			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
-	<!--
-		<repositories>
-			<repository>
-				<id>spring-snapshots</id>
-				<name>Spring Snapshots</name>
-				<url>https://repo.spring.io/snapshot</url>
-				<snapshots>
-					<enabled>true</enabled>
-				</snapshots>
-			</repository>
-		</repositories>
-	-->
+	<repositories>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+        <repository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>ubique-oss-springboot-swagger3</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/ubique-oss/springboot-swagger3</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<id>ubique-oss-springboot-swagger3</id>
+			<name>bintray</name>
+			<url>https://dl.bintray.com/ubique-oss/springboot-swagger3</url>
+		</pluginRepository>
+    </pluginRepositories>
 
 	<build>
 
@@ -272,6 +304,9 @@
 				<configuration>
 					<source>${java-version}</source>
 					<target>${java-version}</target>
+					<compilerArgs>
+						<arg>-parameters</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -289,12 +324,12 @@
 									<version>${java-version}</version>
 								</requireJavaVersion>
 								<bannedDependencies>
-									<excludes>
-										<exclude>log4j:log4j</exclude>
-										<exclude>commons-logging:commons-logging</exclude>
-										<exclude>org.apache.logging.log4j:log4j-core</exclude>
-									</excludes>
-								</bannedDependencies>
+                                    <excludes>
+                                        <exclude>log4j:log4j</exclude>
+                                        <exclude>commons-logging:commons-logging</exclude>
+                                        <exclude>org.apache.logging.log4j:log4j-core</exclude>
+                                    </excludes>
+                                </bannedDependencies>
 							</rules>
 							<fail>true</fail>
 						</configuration>
@@ -325,6 +360,17 @@
 							<propertyName>failsafeArgLine</propertyName>
 						</configuration>
 					</execution>
+
+					<!-- METHOD 1 -->
+					<!--<execution>-->
+					<!--<id>prepare-agent</id>-->
+					<!--<goals>-->
+					<!--<goal>prepare-agent</goal>-->
+					<!--</goals>-->
+					<!--</execution>-->
+					<!-- prepare agent for measuring unit tests -->
+
+					<!-- METHOD 2 -->
 					<execution>
 						<id>prepare-unit-tests</id>
 						<goals>
@@ -373,6 +419,66 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>retrieve-git-info</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<injectAllReactorProjects>true</injectAllReactorProjects>
+					<runOnlyOnce>true</runOnlyOnce>
+					<skipPoms>false</skipPoms>
+					<dateFormat>yyyyMMddHHmmss</dateFormat>
+					<dateFormatTimeZone>UTC</dateFormatTimeZone>
+					<failOnNoGitDirectory>false</failOnNoGitDirectory>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Last-Commit-Id>${git.commit.id}</Last-Commit-Id>
+							<Last-Commit-Time>${git.commit.time}</Last-Commit-Time>
+							<Reproducible-Build>true</Reproducible-Build>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>io.github.zlika</groupId>
+				<artifactId>reproducible-build-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>strip-jaxb</id>
+						<goals>
+						<goal>strip-jaxb</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>strip-jar</id>
+						<goals>
+						<goal>strip-jar</goal>
+						</goals>
+						<configuration>
+						<zipDateTime>${git.commit.time}</zipDateTime>
+						<!-- Set custom date/time format pattern, "yyyyMMddHHmmss" by default -->
+						<!-- <zipDateTimeFormatPattern>yyyyMMddHHmmss</zipDateTimeFormatPattern> -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
@@ -405,79 +511,18 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<plugin>
-				<groupId>pl.project13.maven</groupId>
-				<artifactId>git-commit-id-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>retrieve-git-info</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>revision</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<injectAllReactorProjects>true</injectAllReactorProjects>
-					<runOnlyOnce>true</runOnlyOnce>
-					<skipPoms>false</skipPoms>
-					<dateFormat>yyyyMMddHHmmss</dateFormat>
-					<dateFormatTimeZone>UTC</dateFormatTimeZone>
-					<failOnNoGitDirectory>false</failOnNoGitDirectory>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifestEntries>
-							<Last-Commit-Id>${git.commit.id}</Last-Commit-Id>
-							<Last-Commit-Time>${git.commit.time}</Last-Commit-Time>
-							<Reproducible-Build>true</Reproducible-Build>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>io.github.zlika</groupId>
-				<artifactId>reproducible-build-maven-plugin</artifactId>
-				<version>0.12</version>
-				<executions>
-					<execution>
-						<id>strip-jaxb</id>
-						<goals>
-							<goal>strip-jaxb</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>strip-jar</id>
-						<goals>
-							<goal>strip-jar</goal>
-						</goals>
-						<configuration>
-							<zipDateTime>${git.commit.time}</zipDateTime>
-							<!-- Set custom date/time format pattern, "yyyyMMddHHmmss" by default -->
-							<!-- <zipDateTimeFormatPattern>yyyyMMddHHmmss</zipDateTimeFormatPattern> -->
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>ch.ubique.openapi</groupId>
+					<artifactId>springboot-swagger-3</artifactId>
+					<version>1.2.8</version>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
-					<configuration>
-						<source>${java-version}</source>
-						<target>${java-version}</target>
-						<compilerArgs>
-							<arg>-parameters</arg>
-						</compilerArgs>
-					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.jacoco</groupId>
@@ -490,14 +535,49 @@
 					<version>3.7.0.1746</version>
 				</plugin>
 				<plugin>
-					<groupId>com.github.os72</groupId>
-					<artifactId>protoc-jar-maven-plugin</artifactId>
-					<version>3.11.4</version>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>3.0.0-M3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>3.0.0-M5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>3.0.0-M5</version>
+				</plugin>
+				<plugin>
+					<groupId>pl.project13.maven</groupId>
+					<artifactId>git-commit-id-plugin</artifactId>
+					<version>4.0.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>io.github.zlika</groupId>
+					<artifactId>reproducible-build-maven-plugin</artifactId>
+					<version>0.12</version>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot-version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
 					<version>3.2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>com.github.os72</groupId>
+					<artifactId>protoc-jar-maven-plugin</artifactId>
+					<version>3.11.4</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -506,29 +586,18 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>2.22.2</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.22.2</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.0.0-M3</version>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.1.0</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-	<!--
-		<distributionManagement>
-			<repository>
-				<id>github</id>
-				<name>GitHub Packages</name>
-				<url>https://maven.pkg.github.com/DP-3T/dp3t-sdk-backend</url>
-			</repository>
-		</distributionManagement>
-	-->
+
+	<distributionManagement>
+		<repository>
+			<id>github</id>
+			<name>GitHub Packages</name>
+			<url>https://maven.pkg.github.com/DP-3T/dp3t-sdk-backend</url>
+		</repository>
+	</distributionManagement>
 </project>
