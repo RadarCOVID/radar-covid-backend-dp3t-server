@@ -1,9 +1,10 @@
-FROM adoptopenjdk:11-jre-hotspot as builder
-WORKDIR application
-COPY [ "${project.build.finalName}-exec.jar", "application.jar" ]
-RUN java -Djarmode=layertools -jar application.jar extract
+FROM adoptopenjdk:11-jre-openj9 as builder
+WORKDIR /dpppt
+COPY [ "${project.build.finalName}-exec.jar", "app.jar" ]
+RUN java -Djarmode=layertools -jar app.jar extract
 
 FROM adoptopenjdk:11-jre-openj9
+WORKDIR /dpppt
 
 # Metadata
 LABEL module.maintainer="DP3T" \
@@ -11,12 +12,7 @@ LABEL module.maintainer="DP3T" \
 
 RUN useradd app
 
-WORKDIR application
-
-COPY --from=builder application/dependencies/ ./
-COPY --from=builder application/snapshot-dependencies/ ./
-COPY --from=builder application/spring-boot-loader/ ./
-COPY --from=builder application/application/ ./
+VOLUME [ "/tmp" ]
 
 ARG AWS_ACCESS_KEY=dummy_access_key
 ARG AWS_SECRET_KEY=dummy_secret_key
@@ -25,14 +21,18 @@ ARG AWS_PARAMSTORE_ENABLED=true
 ENV AWS_ACCESS_KEY_ID ${AWS_ACCESS_KEY}
 ENV AWS_SECRET_KEY ${AWS_SECRET_KEY} 
 ENV AWS_PARAMSTORE_ENABLED ${AWS_PARAMSTORE_ENABLED}
-		
-ENV JAVA_OPTS="$JAVA_OPTS -Xms256M -Xmx1536M" \
-    SERVER_PORT=8080
+
+ENV JAVA_TOOL_OPTIONS $JAVA_TOOL_OPTIONS -Xms512M -Xmx3072M
+ENV SERVER_PORT=8080
 
 EXPOSE ${SERVER_PORT}
 
-VOLUME [ "/tmp" ]
-
 USER app
 
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -Dspring.profiles.active=${build.profile.id},jwt org.springframework.boot.loader.JarLauncher" ]
+COPY --from=builder dpppt/dependencies/ ./
+COPY --from=builder dpppt/spring-boot-loader/ ./
+COPY --from=builder dpppt/snapshot-dependencies/ ./
+COPY --from=builder dpppt/company-dependencies/ ./
+COPY --from=builder dpppt/application/ ./
+
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-Dspring.profiles.active=${build.profile.id},jwt", "org.springframework.boot.loader.JarLauncher"]

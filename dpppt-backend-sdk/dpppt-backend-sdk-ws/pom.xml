@@ -203,6 +203,7 @@
 					<classifier>exec</classifier>
 					<layers>
 						<enabled>true</enabled>
+						<configuration>${project.basedir}/src/main/docker/layers.xml</configuration>
 					</layers>
 				</configuration>
 				<executions>
@@ -238,6 +239,9 @@
 								<resource>
 									<directory>${project.basedir}/src/main/docker</directory>
 									<filtering>true</filtering>
+									<excludes>
+										<exclude>**/layers.xml</exclude>
+									</excludes>
 								</resource>
 							</resources>
 							<delimiters>
