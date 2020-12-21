@@ -192,7 +192,7 @@ public class GaenController {
           try {
             now.normalizeDuration(requestTime);
           } catch (DurationExpiredException e) {
-            logger.error("Total time spent in endpoint is longer than requestTime");
+            logger.debug("Total time spent in endpoint is longer than requestTime");
           }
           return responseBuilder.body("OK");
         };
@@ -244,7 +244,7 @@ public class GaenController {
       try {
         now.normalizeDuration(requestTime);
       } catch (DurationExpiredException e) {
-        logger.error("Total time spent in endpoint is longer than requestTime");
+        logger.debug("Total time spent in endpoint is longer than requestTime");
       }
       return ResponseEntity.ok().body("OK");
     };
@@ -301,7 +301,7 @@ public class GaenController {
         fakeKeyService.fillUpKeys(exposedKeys, publishedAfterInstant, keyDateInstant, now);
     if (exposedKeys.isEmpty()) {
       return ResponseEntity.noContent()
-          .cacheControl(CacheControl.maxAge(exposedListCacheControl))
+          //.cacheControl(CacheControl.maxAge(exposedListCacheControl))
           .header("X-PUBLISHED-UNTIL", Long.toString(publishedUntil.getTimestamp()))
           .header("Expires", RFC1123_DATE_TIME_FORMATTER.format(expiration.getOffsetDateTime()))
           .build();
@@ -310,7 +310,7 @@ public class GaenController {
     ProtoSignatureWrapper payload = gaenSigner.getPayload(exposedKeys);
 
     return ResponseEntity.ok()
-        .cacheControl(CacheControl.maxAge(exposedListCacheControl))
+        //.cacheControl(CacheControl.maxAge(exposedListCacheControl))
         .header("X-PUBLISHED-UNTIL", Long.toString(publishedUntil.getTimestamp()))
         .header("Expires", RFC1123_DATE_TIME_FORMATTER.format(expiration.getOffsetDateTime()))
         .body(payload.getZip());

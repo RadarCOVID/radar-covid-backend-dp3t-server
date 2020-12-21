@@ -216,12 +216,14 @@ public class PostgresGaenDataServiceTest {
     Connection connection = dataSource.getConnection();
     String sql =
         "into t_gaen_exposed (pk_exposed_id, key, received_at, rolling_start_number,"
-            + " rolling_period, transmission_risk_level) values (100, ?, ?, ?, 144, 0)";
+            + " rolling_period, transmission_risk_level, expiry) values (100, ?, ?, ?, 144, 0, ?)";
     PreparedStatement preparedStatement = connection.prepareStatement("insert " + sql);
     preparedStatement.setString(1, key);
     preparedStatement.setTimestamp(2, new Timestamp(receivedAt.toEpochMilli()));
     preparedStatement.setInt(
         3, (int) GaenUnit.TenMinutes.between(Instant.ofEpochMilli(0), keyDate));
+    preparedStatement.setTimestamp(4, new Timestamp(UTCInstant.of(Instant.ofEpochMilli(0).toEpochMilli() + 144, GaenUnit.TenMinutes)
+    		.plus(Duration.ofHours(2)).getTimestamp()));
     preparedStatement.execute();
   }
 

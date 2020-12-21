@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
 import org.dpppt.backend.sdk.model.gaen.GaenKey;
+import org.dpppt.backend.sdk.model.gaen.GaenUnit;
 import org.dpppt.backend.sdk.utils.UTCInstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,13 +35,15 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
   // for now
   // https://developer.apple.com/documentation/exposurenotification/setting_up_a_key_server?language=objc)
   private final Duration timeSkew;
+  private final String originCountry;
 
   public JDBCGAENDataServiceImpl(
-      String dbType, DataSource dataSource, Duration releaseBucketDuration, Duration timeSkew) {
+      String dbType, DataSource dataSource, Duration releaseBucketDuration, Duration timeSkew, String originCountry) {
     this.dbType = dbType;
     this.jt = new NamedParameterJdbcTemplate(dataSource);
     this.releaseBucketDuration = releaseBucketDuration;
     this.timeSkew = timeSkew;
+    this.originCountry = originCountry;
   }
 
   @Override
@@ -58,24 +61,24 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
       sql =
           "insert into t_gaen_exposed (key, rolling_start_number, rolling_period,"
               + " transmission_risk_level, received_at,"
-              + " country_origin, report_type, days_since_onset, efgs_sharing)"
+              + " country_origin, report_type, days_since_onset, efgs_sharing, expiry)"
               + " values (:key, :rolling_start_number,"
               + " :rolling_period, :transmission_risk_level, :received_at,"
-              + " :country_origin, :report_type, :days_since_onset, :efgs_sharing)"
+              + " :country_origin, :report_type, :days_since_onset, :efgs_sharing, :expiry)"
               + " on conflict on constraint gaen_exposed_key do nothing";
     } else {
       sql =
           "merge into t_gaen_exposed using (values(cast(:key as varchar(24)),"
               + " :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at,"
-              + " :country_origin, :report_type, :days_since_onset, :efgs_sharing))"
+              + " :country_origin, :report_type, :days_since_onset, :efgs_sharing, :expiry))"
               + " as vals(key, rolling_start_number, rolling_period, transmission_risk_level,"
-              + " received_at, country_origin, report_type, days_since_onset, efgs_sharing)"
+              + " received_at, country_origin, report_type, days_since_onset, efgs_sharing, expiry)"
               + " on t_gaen_exposed.key = vals.key when not matched then insert (key,"
               + " rolling_start_number, rolling_period, transmission_risk_level, received_at,"
-              + " country_origin, report_type, days_since_onset, efgs_sharing)"
+              + " country_origin, report_type, days_since_onset, efgs_sharing, expiry)"
               + " values (vals.key, vals.rolling_start_number, vals.rolling_period,"
               + " transmission_risk_level, vals.received_at,"
-              + " vals.country_origin, vals.report_type, vals.days_since_onset, vals.efgs_sharing)";
+              + " vals.country_origin, vals.report_type, vals.days_since_onset, vals.efgs_sharing, vals.expiry)";
     }
     var parameterList = new ArrayList<MapSqlParameterSource>();
     // Calculate the `receivedAt` just at the end of the current releaseBucket.
@@ -84,6 +87,7 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
             ? now.roundToNextBucket(releaseBucketDuration).minus(Duration.ofMillis(1))
             : delayedReceivedAt;
     for (var gaenKey : gaenKeys) {
+      var exiry = UTCInstant.of(gaenKey.getRollingStartNumber() + gaenKey.getRollingPeriod(), GaenUnit.TenMinutes).plus(timeSkew);
       MapSqlParameterSource params = new MapSqlParameterSource();
       params.addValue("key", gaenKey.getKeyData());
       params.addValue("rolling_start_number", gaenKey.getRollingStartNumber());
@@ -94,6 +98,7 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
       params.addValue("report_type", gaenKey.getReportType());
       params.addValue("days_since_onset", gaenKey.getDaysSinceOnsetOfSymptons());
       params.addValue("efgs_sharing", gaenKey.getEfgsSharing());
+      params.addValue("expiry", exiry.getDate());
 
       parameterList.add(params);
     }
@@ -139,7 +144,7 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now) {
+  public List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now, List<String> visitedCountries) {
     MapSqlParameterSource params = new MapSqlParameterSource();
     params.addValue("since", keysSince.getDate());
     params.addValue("maxBucket", now.roundToBucketStart(releaseBucketDuration).getDate());
@@ -159,17 +164,44 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
     // we need to add the time skew to calculate the expiry timestamp of a key:
     // TO_TIMESTAMP((rolling_start_number + rolling_period) * 10 * 60 + :timeSkewSeconds
 
-    String sql =
-        "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
-            + " keys.transmission_risk_level from (select pk_exposed_id, key,"
-            + " rolling_start_number, rolling_period, transmission_risk_level, received_at,  "
-            + getSQLExpressionForExpiry()
-            + " as expiry from t_gaen_exposed) as keys where ( (keys.expiry <= keys.received_at"
-            + " AND keys.received_at >= :since AND keys.received_at < :maxBucket) OR (keys.expiry"
-            + " > keys.received_at AND keys.expiry >= :since AND keys.expiry < :maxBucket) )"
-            + " order by keys.pk_exposed_id desc";
+    //TODO revisar query con paises  visitados
+//    StringBuilder sql = new StringBuilder(
+//		"select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
+//		    + " keys.transmission_risk_level from (select pk_exposed_id, key,"
+//		    + " rolling_start_number, rolling_period, transmission_risk_level, received_at,"
+//            + " country_origin," + getSQLExpressionForExpiry()
+//            + " as expiry from t_gaen_exposed)"
+//            + " as keys left join t_visited v on keys.pk_exposed_id = v.pfk_exposed_id"
+//            + " where ((keys.received_at >= :since AND  keys.received_at < :maxBucket"
+//            + " AND keys.expiry <= keys.received_at) OR (keys.expiry >= :since"
+//            + " AND keys.expiry < :maxBucket AND keys.expiry > keys.received_at))");
+//    
+//    if (visitedCountries != null && !visitedCountries.isEmpty()) {
+//    	sql.append(" AND (v.country IN (:countries) OR keys.country_origin IN (:countries))");
+//    	visitedCountries.add(originCountry);
+//    	params.addValue("countries", visitedCountries);
+//    }
+//    
+//    sql.append(" order by keys.pk_exposed_id desc");
+    
+//    String sql =
+//            "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
+//                + " keys.transmission_risk_level from (select pk_exposed_id, key,"
+//                + " rolling_start_number, rolling_period, transmission_risk_level, received_at,  "
+//                + getSQLExpressionForExpiry()
+//                + " as expiry from t_gaen_exposed) as keys where ( (keys.expiry <= keys.received_at"
+//                + " AND keys.received_at >= :since AND keys.received_at < :maxBucket) OR (keys.expiry"
+//                + " > keys.received_at AND keys.expiry >= :since AND keys.expiry < :maxBucket) )"
+//                + " order by keys.pk_exposed_id desc";
 
-    return jt.query(sql, params, new GaenKeyRowMapper());
+    String sql =
+            "select pk_exposed_id, key, rolling_start_number, rolling_period,"
+                + " transmission_risk_level from t_gaen_exposed where ( (expiry <= received_at"
+                + " AND received_at >= :since AND received_at < :maxBucket) OR (expiry > received_at AND " 
+                + " expiry >= :since AND expiry < :maxBucket) )"
+                + " order by pk_exposed_id desc";
+
+    return jt.query(sql.toString(), params, new GaenKeyRowMapper());
   }
 
   private String getSQLExpressionForExpiry() {

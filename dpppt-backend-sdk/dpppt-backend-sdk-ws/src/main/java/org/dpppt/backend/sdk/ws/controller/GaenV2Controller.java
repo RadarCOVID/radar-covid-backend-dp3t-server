@@ -2,15 +2,6 @@ package org.dpppt.backend.sdk.ws.controller;
 
 import ch.ubique.openapi.docannotations.Documentation;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.time.Duration;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.concurrent.Callable;
-import javax.validation.Valid;
 import org.dpppt.backend.sdk.data.gaen.FakeKeyService;
 import org.dpppt.backend.sdk.data.gaen.GAENDataService;
 import org.dpppt.backend.sdk.model.gaen.GaenKey;
@@ -31,21 +22,25 @@ import org.dpppt.backend.sdk.ws.util.ValidationUtils;
 import org.dpppt.backend.sdk.ws.util.ValidationUtils.BadBatchReleaseTimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.time.Duration;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Callable;
 
 /** This is a new controller to simplify the sending and receiving of keys using ENv1.5/ENv2. */
 @Controller
@@ -69,6 +64,10 @@ public class GaenV2Controller {
   private final Duration retentionPeriod;
 
   private static final String HEADER_X_KEY_BUNDLE_TAG = "x-key-bundle-tag";
+
+  private static final DateTimeFormatter RFC1123_DATE_TIME_FORMATTER =
+          DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
+                  .withZone(ZoneOffset.UTC).withLocale(Locale.ENGLISH);
 
   public GaenV2Controller(
       InsertManager insertManager,
@@ -141,7 +140,7 @@ public class GaenV2Controller {
           try {
             now.normalizeDuration(requestTime);
           } catch (DurationExpiredException e) {
-            logger.error("Total time spent in endpoint is longer than requestTime");
+            logger.debug("Total time spent in endpoint is longer than requestTime");
           }
           return responseBuilder.body("OK");
         };
@@ -149,7 +148,7 @@ public class GaenV2Controller {
   }
 
   // GET for Key Download
-  @GetMapping(value = "/exposed")
+  @GetMapping(value = "/exposed", produces = "applicaton/zip")
   @Documentation(
       description = "Requests keys published _after_ lastKeyBundleTag.",
       responses = {
@@ -165,7 +164,14 @@ public class GaenV2Controller {
                       + " retention period are returned",
               example = "1593043200000")
           @RequestParam(required = false)
-          Long lastKeyBundleTag)
+          Long lastKeyBundleTag,
+      @Documentation(
+              description =
+	               "Visited countries list for exposed key retrieval. Optional, if not setted,"
+	                  + " all visited countries are returned",
+	          example = "IT, DE, PT")
+          @RequestParam(required = false)
+          List<String> visitedCountries)
       throws BadBatchReleaseTimeException, InvalidKeyException, SignatureException,
           NoSuchAlgorithmException, IOException {
     var now = UTCInstant.now();
@@ -182,20 +188,23 @@ public class GaenV2Controller {
       return ResponseEntity.notFound().build();
     }
     UTCInstant keyBundleTag = now.roundToBucketStart(releaseBucketDuration);
+    UTCInstant expiration = now.roundToNextBucket(releaseBucketDuration);
 
-    List<GaenKey> exposedKeys = dataService.getSortedExposedSince(keysSince, now);
+    List<GaenKey> exposedKeys = dataService.getSortedExposedSince(keysSince, now, visitedCountries);
 
     if (exposedKeys.isEmpty()) {
       return ResponseEntity.noContent()
-          .cacheControl(CacheControl.maxAge(exposedListCacheControl))
+          //.cacheControl(CacheControl.maxAge(exposedListCacheControl))
           .header(HEADER_X_KEY_BUNDLE_TAG, Long.toString(keyBundleTag.getTimestamp()))
+          .header("Expires", RFC1123_DATE_TIME_FORMATTER.format(expiration.getOffsetDateTime()))
           .build();
     }
     ProtoSignatureWrapper payload = gaenSigner.getPayloadV2(exposedKeys);
 
     return ResponseEntity.ok()
-        .cacheControl(CacheControl.maxAge(exposedListCacheControl))
+        //.cacheControl(CacheControl.maxAge(exposedListCacheControl))
         .header(HEADER_X_KEY_BUNDLE_TAG, Long.toString(keyBundleTag.getTimestamp()))
+        .header("Expires", RFC1123_DATE_TIME_FORMATTER.format(expiration.getOffsetDateTime()))
         .body(payload.getZip());
   }
 

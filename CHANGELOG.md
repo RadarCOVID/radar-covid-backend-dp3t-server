@@ -6,10 +6,20 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [2.0.1.RELEASE] - 2020-12-17
+
+### Added
+
 - Index in table t_gaen_exposed.
 - Added Micrometer connecting with CloudWatch.
 - Added minimum idle database connection.
 - Added [efficient Docker images with Spring Boot 2.3](https://spring.io/blog/2020/08/14/creating-efficient-docker-images-with-spring-boot-2-3).
+- Added origin countries and visited countries filters on gaen exposed retrieval.
+- Added produces application/zip in GaenV2Controller (and raised a PR to DP3T).
 
 ### Changed
 

@@ -62,7 +62,8 @@ public interface GAENDataService {
    *
    * @param keysSince
    * @param now
+   * @param visitedCountries
    * @return
    */
-  List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now);
+  List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now, List<String> visitedCountries);
 }

@@ -9,12 +9,14 @@
  */
 package org.dpppt.backend.sdk.ws.util;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.sql.DataSource;
 import org.dpppt.backend.sdk.data.gaen.GaenKeyRowMapper;
 import org.dpppt.backend.sdk.model.gaen.GaenKey;
+import org.dpppt.backend.sdk.model.gaen.GaenUnit;
 import org.dpppt.backend.sdk.utils.UTCInstant;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -63,27 +65,29 @@ public class TestJDBCGaen {
     if (dbType.equals(PGSQL)) {
       sql =
           "insert into t_gaen_exposed (key, rolling_start_number, rolling_period,"
-              + " transmission_risk_level, received_at) values (:key, :rolling_start_number,"
-              + " :rolling_period, :transmission_risk_level, :received_at) on conflict on"
+              + " transmission_risk_level, received_at, expiry) values (:key, :rolling_start_number,"
+              + " :rolling_period, :transmission_risk_level, :received_at, expiry) on conflict on"
               + " constraint gaen_exposed_key do nothing";
     } else {
       sql =
           "merge into t_gaen_exposed using (values(cast(:key as varchar(24)),"
-              + " :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at))"
+              + " :rolling_start_number, :rolling_period, :transmission_risk_level, :received_at, :expiry))"
               + " as vals(key, rolling_start_number, rolling_period, transmission_risk_level,"
-              + " received_at) on t_gaen_exposed.key = vals.key when not matched then insert (key,"
-              + " rolling_start_number, rolling_period, transmission_risk_level, received_at)"
+              + " received_at, expiry) on t_gaen_exposed.key = vals.key when not matched then insert (key,"
+              + " rolling_start_number, rolling_period, transmission_risk_level, received_at, expiry)"
               + " values (vals.key, vals.rolling_start_number, vals.rolling_period,"
-              + " vals.transmission_risk_level, vals.received_at)";
+              + " vals.transmission_risk_level, vals.received_at, vals.expiry)";
     }
     var parameterList = new ArrayList<MapSqlParameterSource>();
     for (var gaenKey : gaenKeys) {
+      var exiry = UTCInstant.of(gaenKey.getRollingStartNumber() + gaenKey.getRollingPeriod(), GaenUnit.TenMinutes).plus(Duration.ofHours(2));
       MapSqlParameterSource params = new MapSqlParameterSource();
       params.addValue("key", gaenKey.getKeyData());
       params.addValue("rolling_start_number", gaenKey.getRollingStartNumber());
       params.addValue("rolling_period", gaenKey.getRollingPeriod());
       params.addValue("transmission_risk_level", gaenKey.getTransmissionRiskLevel());
       params.addValue("received_at", receivedAt.getDate());
+      params.addValue("expiry", exiry.getDate());
       parameterList.add(params);
     }
     jt.batchUpdate(sql, parameterList.toArray(new MapSqlParameterSource[0]));
