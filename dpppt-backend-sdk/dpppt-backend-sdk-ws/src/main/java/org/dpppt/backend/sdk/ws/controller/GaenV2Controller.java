@@ -148,7 +148,7 @@ public class GaenV2Controller {
   }
 
   // GET for Key Download
-  @GetMapping(value = "/exposed", produces = "applicaton/zip")
+  @GetMapping(value = "/exposed", produces = "application/zip")
   @Documentation(
       description = "Requests keys published _after_ lastKeyBundleTag.",
       responses = {
