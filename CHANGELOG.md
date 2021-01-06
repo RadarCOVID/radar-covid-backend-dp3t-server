@@ -9,9 +9,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Fixed
+- Fix `#286` from DP3T: [check batchReleaseTime is in the past](https://github.com/DP-3T/dp3t-sdk-backend/pull/286/commits/57b33501954b500685792208864b4b64fdf3a0e4).
 
 ## [2.0.1.RELEASE] - 2020-12-17
-
 
 ### Added
 
