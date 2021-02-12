@@ -4,11 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [2.0.2.RELEASE] - 2021-02-17
+
 ### Added
+
+- Added expiry column on gaen exposed table.
 
 ### Changed
 
+- Changed to 2.0.2 DP3T Backend release.
+
 ### Fixed
+
+- Fixed efficient visited countries query.
 - Fix `#286` from DP3T: [check batchReleaseTime is in the past](https://github.com/DP-3T/dp3t-sdk-backend/pull/286/commits/57b33501954b500685792208864b4b64fdf3a0e4).
 
 ## [2.0.1.RELEASE] - 2020-12-17
@@ -80,6 +88,8 @@ All notable changes to this project will be documented in this file.
 
 * DP3T Service. Initial version.
 
-[Unreleased]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.1.2.RELEASE...develop
+[Unreleased]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/2.0.2.RELEASE...develop
+[2.0.2.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/2.0.1.RELEASE...2.0.2.RELEASE
+[2.0.1.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.1.2.RELEASE...2.0.1.RELEASE
 [1.1.2.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/compare/1.0.5.RELEASE...1.1.2.RELEASE
 [1.0.5.RELEASE]: https://github.com/RadarCOVID/radar-covid-backend-dp3t-server/releases/tag/1.0.5.RELEASE

@@ -77,7 +77,11 @@ logging:
     org.dpppt.backend.sdk.ws.radarcovid.annotation: info
     org.dpppt.backend.sdk.ws.radarcovid.config: info
     org.dpppt.backend.sdk.ws.security.gaen: debug
+    org.dpppt.backend.sdk.ws.insertmanager.InsertManager: off
     org.dpppt: info
+    com.zaxxer.hikari.pool.HikariPool: debug
+    com.zaxxer.hikari.HikariConfig: debug
+    com.zaxxer.hikari: debug
   pattern:
     console: '[%-5level] [%X{X-B3-TraceId:-},%X{X-Amz-Cf-Id:-}] - %c{1} - %msg%n'
 

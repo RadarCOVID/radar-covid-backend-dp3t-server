@@ -175,12 +175,14 @@ public class GaenV2Controller {
       throws BadBatchReleaseTimeException, InvalidKeyException, SignatureException,
           NoSuchAlgorithmException, IOException {
     var now = UTCInstant.now();
-
-    if (lastKeyBundleTag == null) {
+    
+    Long minimumLastKeyBundleTag =
+            now.minus(retentionPeriod).roundToNextBucket(releaseBucketDuration).getTimestamp();
+    if (lastKeyBundleTag == null || lastKeyBundleTag < minimumLastKeyBundleTag) {
       // if no lastKeyBundleTag given, go back to the start of the retention period and
       // select next bucket.
       lastKeyBundleTag =
-          now.minus(retentionPeriod).roundToNextBucket(releaseBucketDuration).getTimestamp();
+    		  minimumLastKeyBundleTag;
     }
     var keysSince = UTCInstant.ofEpochMillis(lastKeyBundleTag);
 

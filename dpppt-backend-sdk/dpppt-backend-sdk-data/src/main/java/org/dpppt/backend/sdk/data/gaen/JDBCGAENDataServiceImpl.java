@@ -35,15 +35,13 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
   // for now
   // https://developer.apple.com/documentation/exposurenotification/setting_up_a_key_server?language=objc)
   private final Duration timeSkew;
-  private final String originCountry;
 
   public JDBCGAENDataServiceImpl(
-      String dbType, DataSource dataSource, Duration releaseBucketDuration, Duration timeSkew, String originCountry) {
+      String dbType, DataSource dataSource, Duration releaseBucketDuration, Duration timeSkew) {
     this.dbType = dbType;
     this.jt = new NamedParameterJdbcTemplate(dataSource);
     this.releaseBucketDuration = releaseBucketDuration;
     this.timeSkew = timeSkew;
-    this.originCountry = originCountry;
   }
 
   @Override
@@ -164,44 +162,45 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
     // we need to add the time skew to calculate the expiry timestamp of a key:
     // TO_TIMESTAMP((rolling_start_number + rolling_period) * 10 * 60 + :timeSkewSeconds
 
-    //TODO revisar query con paises  visitados
-//    StringBuilder sql = new StringBuilder(
-//		"select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
-//		    + " keys.transmission_risk_level from (select pk_exposed_id, key,"
-//		    + " rolling_start_number, rolling_period, transmission_risk_level, received_at,"
-//            + " country_origin," + getSQLExpressionForExpiry()
-//            + " as expiry from t_gaen_exposed)"
-//            + " as keys left join t_visited v on keys.pk_exposed_id = v.pfk_exposed_id"
-//            + " where ((keys.received_at >= :since AND  keys.received_at < :maxBucket"
-//            + " AND keys.expiry <= keys.received_at) OR (keys.expiry >= :since"
-//            + " AND keys.expiry < :maxBucket AND keys.expiry > keys.received_at))");
-//    
-//    if (visitedCountries != null && !visitedCountries.isEmpty()) {
-//    	sql.append(" AND (v.country IN (:countries) OR keys.country_origin IN (:countries))");
-//    	visitedCountries.add(originCountry);
-//    	params.addValue("countries", visitedCountries);
-//    }
-//    
-//    sql.append(" order by keys.pk_exposed_id desc");
-    
-//    String sql =
-//            "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
-//                + " keys.transmission_risk_level from (select pk_exposed_id, key,"
-//                + " rolling_start_number, rolling_period, transmission_risk_level, received_at,  "
-//                + getSQLExpressionForExpiry()
-//                + " as expiry from t_gaen_exposed) as keys where ( (keys.expiry <= keys.received_at"
-//                + " AND keys.received_at >= :since AND keys.received_at < :maxBucket) OR (keys.expiry"
-//                + " > keys.received_at AND keys.expiry >= :since AND keys.expiry < :maxBucket) )"
-//                + " order by keys.pk_exposed_id desc";
+    // INIT RADARCOVID efficiency changes:
+    // - expiry timestamp is setting on creation key as column
+    // - different queries for visited countries and no visited
+    //  
+    //    String sql =
+    //            "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
+    //                + " keys.transmission_risk_level from (select pk_exposed_id, key,"
+    //                + " rolling_start_number, rolling_period, transmission_risk_level, received_at,  "
+    //                + getSQLExpressionForExpiry()
+    //                + " as expiry from t_gaen_exposed) as keys where ( (keys.expiry <= keys.received_at"
+    //                + " AND keys.received_at >= :since AND keys.received_at < :maxBucket) OR (keys.expiry"
+    //                + " > keys.received_at AND keys.expiry >= :since AND keys.expiry < :maxBucket) )"
+    //                + " order by keys.pk_exposed_id desc";
 
-    String sql =
-            "select pk_exposed_id, key, rolling_start_number, rolling_period,"
-                + " transmission_risk_level from t_gaen_exposed where ( (expiry <= received_at"
-                + " AND received_at >= :since AND received_at < :maxBucket) OR (expiry > received_at AND " 
-                + " expiry >= :since AND expiry < :maxBucket) )"
-                + " order by pk_exposed_id desc";
+    String sql;
+    if (visitedCountries != null && !visitedCountries.isEmpty()) {
+        sql = "select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
+                + " keys.transmission_risk_level from"
+                + " (select pk_exposed_id, key, rolling_start_number, rolling_period, transmission_risk_level,"
+                + " received_at, expiry, country_origin as country from t_gaen_exposed"
+                + " union"
+                + " select pk_exposed_id, key, rolling_start_number, rolling_period, transmission_risk_level, "
+                + " received_at, expiry, country as country from t_gaen_exposed"
+                + " inner join t_visited on pk_exposed_id = pfk_exposed_id) as keys"
+                + " where ( (keys.expiry <= keys.received_at and keys.received_at >= :since and keys.received_at < :maxBucket)"
+                + " or (keys.expiry > keys.received_at and keys.expiry >= :since and keys.expiry < :maxBucket) )"
+                + " and keys.country in (:countries)"
+                + " order by keys.pk_exposed_id desc";
+        params.addValue("countries", visitedCountries);
+    } else {
+        sql = "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
+                + " keys.transmission_risk_level from t_gaen_exposed as keys"
+                + " where ( (keys.expiry <= keys.received_at and keys.received_at >= :since and keys.received_at < :maxBucket)"
+                + " or (keys.expiry > keys.received_at and keys.expiry >= :since and keys.expiry < :maxBucket) )"
+                + " order by keys.pk_exposed_id desc";
+    }
+    // END RADARCOVID efficiency changes
 
-    return jt.query(sql.toString(), params, new GaenKeyRowMapper());
+    return jt.query(sql, params, new GaenKeyRowMapper());
   }
 
   private String getSQLExpressionForExpiry() {

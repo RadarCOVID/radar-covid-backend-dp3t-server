@@ -63,7 +63,7 @@ public class GaenDataServiceConfig {
   @Bean
   public GAENDataService gaenDataService() {
     return new JDBCGAENDataServiceImpl(
-        dbType, dataSource, Duration.ofMillis(releaseBucketDuration), timeSkew, efgsCountryOrigin);
+        dbType, dataSource, Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 
   @Bean
@@ -74,7 +74,7 @@ public class GaenDataServiceConfig {
   @Bean
   public GAENDataService fakeService() {
     return new JDBCGAENDataServiceImpl(
-        "hsql", fakeDataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew, efgsCountryOrigin);
+        "hsql", fakeDataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 
   @Bean

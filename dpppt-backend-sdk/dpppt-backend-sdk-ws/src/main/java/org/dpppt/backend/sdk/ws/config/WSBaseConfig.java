@@ -202,7 +202,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
       flyWay.migrate();
       GAENDataService fakeGaenService =
           new JDBCGAENDataServiceImpl(
-              "hsql", fakeDataSource, Duration.ofMillis(releaseBucketDuration), timeSkew, efgsCountryOrigin);
+              "hsql", fakeDataSource, Duration.ofMillis(releaseBucketDuration), timeSkew);
       return new FakeKeyService(
           fakeGaenService,
           Integer.valueOf(randomkeyamount),
@@ -358,7 +358,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
   @Bean
   public GAENDataService gaenDataService() {
     return new JDBCGAENDataServiceImpl(
-        getDbType(), dataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew, efgsCountryOrigin);
+        getDbType(), dataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 
   @Bean

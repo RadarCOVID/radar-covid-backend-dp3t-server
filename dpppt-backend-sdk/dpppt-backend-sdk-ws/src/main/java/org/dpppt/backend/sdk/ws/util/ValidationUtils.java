@@ -9,11 +9,12 @@
  */
 package org.dpppt.backend.sdk.ws.util;
 
-import java.time.Duration;
-import java.util.Base64;
 import org.dpppt.backend.sdk.model.gaen.GaenUnit;
 import org.dpppt.backend.sdk.utils.UTCInstant;
 import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.time.Duration;
+import java.util.Base64;
 
 /** Offers a set of methods to validate the incoming requests from the mobile devices. */
 public class ValidationUtils {
