@@ -107,13 +107,13 @@ public class GaenDataServiceTest {
 
     // eleven O'clock no key
     try (var now = UTCInstant.setClock(elevenOClock)) {
-      var returnedKeys = gaenDataService.getSortedExposedSince(now.minusDays(10), now, null);
+      var returnedKeys = gaenDataService.getSortedExposedSince(now.minusDays(10), now, null, null);
       assertEquals(0, returnedKeys.size());
     }
 
     // twelve O'clock release the key
     try (var now = UTCInstant.setClock(fourteenOClock)) {
-      var returnedKeys = gaenDataService.getSortedExposedSince(now.minusDays(10), now, null);
+      var returnedKeys = gaenDataService.getSortedExposedSince(now.minusDays(10), now, null, null);
       assertEquals(1, returnedKeys.size());
     }
   }

@@ -142,7 +142,8 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
 
   @Override
   @Transactional(readOnly = true)
-  public List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now, List<String> visitedCountries) {
+  public List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now, List<String> visitedCountries,
+                                             List<String> originCountries) {
     MapSqlParameterSource params = new MapSqlParameterSource();
     params.addValue("since", keysSince.getDate());
     params.addValue("maxBucket", now.roundToBucketStart(releaseBucketDuration).getDate());
@@ -176,31 +177,31 @@ public class JDBCGAENDataServiceImpl implements GAENDataService {
     //                + " > keys.received_at AND keys.expiry >= :since AND keys.expiry < :maxBucket) )"
     //                + " order by keys.pk_exposed_id desc";
 
-    String sql;
+    StringBuilder sql = new StringBuilder()
+    		.append("select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period, ")
+    		.append("keys.transmission_risk_level from t_gaen_exposed as keys ");
+    
     if (visitedCountries != null && !visitedCountries.isEmpty()) {
-        sql = "select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
-                + " keys.transmission_risk_level from"
-                + " (select pk_exposed_id, key, rolling_start_number, rolling_period, transmission_risk_level,"
-                + " received_at, expiry, country_origin as country from t_gaen_exposed"
-                + " union"
-                + " select pk_exposed_id, key, rolling_start_number, rolling_period, transmission_risk_level, "
-                + " received_at, expiry, country as country from t_gaen_exposed"
-                + " inner join t_visited on pk_exposed_id = pfk_exposed_id) as keys"
-                + " where ( (keys.expiry <= keys.received_at and keys.received_at >= :since and keys.received_at < :maxBucket)"
-                + " or (keys.expiry > keys.received_at and keys.expiry >= :since and keys.expiry < :maxBucket) )"
-                + " and keys.country in (:countries)"
-                + " order by keys.pk_exposed_id desc";
-        params.addValue("countries", visitedCountries);
-    } else {
-        sql = "select keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period,"
-                + " keys.transmission_risk_level from t_gaen_exposed as keys"
-                + " where ( (keys.expiry <= keys.received_at and keys.received_at >= :since and keys.received_at < :maxBucket)"
-                + " or (keys.expiry > keys.received_at and keys.expiry >= :since and keys.expiry < :maxBucket) )"
-                + " order by keys.pk_exposed_id desc";
+    	sql.append("inner join t_visited as visited on pk_exposed_id = pfk_exposed_id ");
     }
+    
+    sql.append("where ((keys.expiry <= keys.received_at and keys.received_at >= :since and keys.received_at < ")
+       .append(":maxBucket) or (keys.expiry > keys.received_at and keys.expiry >= :since and keys.expiry < :maxBucket)) ");
+    
+    if (originCountries != null && !originCountries.isEmpty()) {
+    	sql.append("and keys.country_origin in (:originc) ");
+    	params.addValue("originc", originCountries);
+    }
+    
+    if (visitedCountries != null && !visitedCountries.isEmpty()) {
+    	sql.append("and visited.country in (:visitedc) ");
+    	params.addValue("visitedc", visitedCountries);
+    }
+    
+    sql.append("order by keys.pk_exposed_id desc");
     // END RADARCOVID efficiency changes
 
-    return jt.query(sql, params, new GaenKeyRowMapper());
+    return jt.query(sql.toString(), params, new GaenKeyRowMapper());
   }
 
   private String getSQLExpressionForExpiry() {

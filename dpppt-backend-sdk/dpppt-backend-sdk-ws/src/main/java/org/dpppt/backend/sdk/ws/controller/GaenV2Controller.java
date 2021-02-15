@@ -171,7 +171,14 @@ public class GaenV2Controller {
 	                  + " all visited countries are returned",
 	          example = "IT, DE, PT")
           @RequestParam(required = false)
-          List<String> visitedCountries)
+          List<String> visitedCountries,
+      @Documentation(
+              description =
+                      "Origin countries list for exposed key retrieval. Optional, if not setted,"
+                      + " all origin countries are returned",
+              example = "IT, DE, PT")
+      @RequestParam(required = false)
+              List<String> originCountries)
       throws BadBatchReleaseTimeException, InvalidKeyException, SignatureException,
           NoSuchAlgorithmException, IOException {
     var now = UTCInstant.now();
@@ -192,7 +199,7 @@ public class GaenV2Controller {
     UTCInstant keyBundleTag = now.roundToBucketStart(releaseBucketDuration);
     UTCInstant expiration = now.roundToNextBucket(releaseBucketDuration);
 
-    List<GaenKey> exposedKeys = dataService.getSortedExposedSince(keysSince, now, visitedCountries);
+    List<GaenKey> exposedKeys = dataService.getSortedExposedSince(keysSince, now, visitedCountries, originCountries);
 
     if (exposedKeys.isEmpty()) {
       return ResponseEntity.noContent()
