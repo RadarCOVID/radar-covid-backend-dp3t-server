@@ -25,7 +25,7 @@ import org.dpppt.backend.sdk.data.JDBCRedeemDataServiceImpl;
 import org.dpppt.backend.sdk.data.RedeemDataService;
 import org.dpppt.backend.sdk.data.gaen.FakeKeyService;
 import org.dpppt.backend.sdk.data.gaen.GAENDataService;
-import org.dpppt.backend.sdk.data.gaen.JDBCGAENDataServiceImpl;
+import org.dpppt.backend.sdk.data.radarcovid.gaen.SpanishJDBCGAENDataServiceImpl;
 import org.dpppt.backend.sdk.ws.controller.GaenController;
 import org.dpppt.backend.sdk.ws.controller.GaenV2Controller;
 import org.dpppt.backend.sdk.ws.filter.ResponseWrapperFilter;
@@ -201,7 +201,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
               .load();
       flyWay.migrate();
       GAENDataService fakeGaenService =
-          new JDBCGAENDataServiceImpl(
+          new SpanishJDBCGAENDataServiceImpl(
               "hsql", fakeDataSource, Duration.ofMillis(releaseBucketDuration), timeSkew);
       return new FakeKeyService(
           fakeGaenService,
@@ -357,7 +357,7 @@ public abstract class WSBaseConfig implements WebMvcConfigurer {
 
   @Bean
   public GAENDataService gaenDataService() {
-    return new JDBCGAENDataServiceImpl(
+    return new SpanishJDBCGAENDataServiceImpl(
         getDbType(), dataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 

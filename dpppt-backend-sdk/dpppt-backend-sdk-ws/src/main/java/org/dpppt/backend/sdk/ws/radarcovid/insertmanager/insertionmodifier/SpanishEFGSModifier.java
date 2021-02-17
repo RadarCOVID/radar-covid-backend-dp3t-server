@@ -44,6 +44,7 @@ public class SpanishEFGSModifier implements KeyInsertionModifier {
             gaenKey.setEfgsSharing(efgsSharing);
             gaenKey.setReportType(reportType);
             gaenKey.setDaysSinceOnsetOfSymptons(daysSinceOnsetOfSymtoms(onsetDay, gaenKey.getRollingStartNumber()));
+            gaenKey.getVisitedCountries().add(countryOrigin);
         }
 
         return content;

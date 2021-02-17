@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -69,7 +70,8 @@ public class InsertManagerTest {
             new MockDataSource(),
             new ValidationUtils(16, Duration.ofDays(14), Duration.ofHours(2).toMillis()));
     var key =
-        new GaenKey("POSTMAN+POSTMAN+", (int) UTCInstant.now().get10MinutesSince1970(), 144, 0, "ES", 1, 1L, true);
+        new GaenKey("POSTMAN+POSTMAN+", (int) UTCInstant.now().get10MinutesSince1970(), 144, 0, "ES", 1, 1L, true,
+        		Collections.singletonList("ES"));
     try {
       manager.insertIntoDatabase(List.of(key), "test", null, UTCInstant.now());
     } catch (RuntimeException ex) {
@@ -96,7 +98,8 @@ public class InsertManagerTest {
             new MockDataSource(),
             new ValidationUtils(16, Duration.ofDays(14), Duration.ofHours(2).toMillis()));
     manager.addModifier(new OldAndroid0RPModifier());
-    var key = new GaenKey("POSTMAN+POSTMAN+", (int) UTCInstant.now().get10MinutesSince1970(), 0, 0, "ES", 1, 1L, false);
+    var key = new GaenKey("POSTMAN+POSTMAN+", (int) UTCInstant.now().get10MinutesSince1970(), 0, 0, "ES", 1, 1L, false,
+    		Collections.singletonList("ES"));
     try {
       manager.insertIntoDatabase(
           List.of(key), "org.dpppt.testrunner;1.0.0;1;iOS;29", null, UTCInstant.now());

@@ -31,8 +31,15 @@ public class MockDataSource implements GAENDataService {
 
   @Override
   public List<GaenKey> getSortedExposedSince(
-      UTCInstant keysSince, UTCInstant now, List<String> visitedCountries, List<String> originCountries) {
+      UTCInstant keysSince, UTCInstant now) { 
 	// TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public List<GaenKey> getSortedExposedSince(UTCInstant keysSince, UTCInstant now, List<String> visitedCountries,
+		List<String> originCountries) {
+	// TODO Auto-generated method stub
+	return null;
   }
 }

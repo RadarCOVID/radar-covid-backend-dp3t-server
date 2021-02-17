@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
 
 public class FakeKeyService {
@@ -60,7 +61,8 @@ public class FakeKeyService {
         random.nextBytes(keyData);
         var keyGAENTime = (int) tmpDate.get10MinutesSince1970();
         var key = new GaenKey(Base64.getEncoder().encodeToString(keyData), keyGAENTime, 144, 0,
-                              countryOrigin, reportType, EFGS_DEFAULT_DAYS_SINCE_ONSET_OF_SYMPTOMS, EFGS_DEFAULT_SHARING);
+                              countryOrigin, reportType, EFGS_DEFAULT_DAYS_SINCE_ONSET_OF_SYMPTOMS, EFGS_DEFAULT_SHARING,
+                              Collections.singletonList(countryOrigin));
         keys.add(key);
       }
       // TODO: Check if currentKeyDate is indeed intended here

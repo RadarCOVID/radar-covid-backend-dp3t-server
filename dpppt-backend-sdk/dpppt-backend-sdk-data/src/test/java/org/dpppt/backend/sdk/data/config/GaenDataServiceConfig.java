@@ -14,7 +14,7 @@ import org.dpppt.backend.sdk.data.JDBCRedeemDataServiceImpl;
 import org.dpppt.backend.sdk.data.RedeemDataService;
 import org.dpppt.backend.sdk.data.gaen.FakeKeyService;
 import org.dpppt.backend.sdk.data.gaen.GAENDataService;
-import org.dpppt.backend.sdk.data.gaen.JDBCGAENDataServiceImpl;
+import org.dpppt.backend.sdk.data.radarcovid.gaen.SpanishJDBCGAENDataServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -62,7 +62,7 @@ public class GaenDataServiceConfig {
 
   @Bean
   public GAENDataService gaenDataService() {
-    return new JDBCGAENDataServiceImpl(
+    return new SpanishJDBCGAENDataServiceImpl(
         dbType, dataSource, Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 
@@ -73,7 +73,7 @@ public class GaenDataServiceConfig {
 
   @Bean
   public GAENDataService fakeService() {
-    return new JDBCGAENDataServiceImpl(
+    return new SpanishJDBCGAENDataServiceImpl(
         "hsql", fakeDataSource(), Duration.ofMillis(releaseBucketDuration), timeSkew);
   }
 

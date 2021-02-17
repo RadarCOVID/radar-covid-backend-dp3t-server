@@ -1,6 +1,10 @@
 package org.dpppt.backend.sdk.model.gaen;
 
 import ch.ubique.openapi.docannotations.Documentation;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
@@ -55,7 +59,11 @@ public class GaenKey {
   @Documentation(
       description = "If key is shareable with EFGS or not")
   private Boolean efgsSharing;
-
+  
+  @Documentation(
+	      description = "Visited countries for EFGS")
+  private List<String> visitedCountries = new ArrayList<>();
+  
   public GaenKey() {}
 
   public GaenKey(
@@ -66,7 +74,8 @@ public class GaenKey {
       String countryOrigin,
       Integer reportType,
       Long daysSinceOnsetOfSymptons,
-      Boolean efgsSharing) {
+      Boolean efgsSharing,
+      List<String> visitedCountries) {
     this.keyData = keyData;
     this.rollingStartNumber = rollingStartNumber;
     this.rollingPeriod = rollingPeriod;
@@ -75,6 +84,7 @@ public class GaenKey {
     this.reportType = reportType;
     this.daysSinceOnsetOfSymptons = daysSinceOnsetOfSymptons;
     this.efgsSharing = efgsSharing;
+    this.visitedCountries = visitedCountries;
   }
 
   public String getKeyData() {
@@ -149,6 +159,14 @@ public class GaenKey {
     this.efgsSharing = efgsSharing;
   }
 
+  public List<String> getVisitedCountries() {
+	return visitedCountries;
+  }
+
+  public void setVisitedCountries(List<String> visitedCountries) {
+	this.visitedCountries = visitedCountries;
+  }
+
   @Override
   public String toString() {
     return "GaenKey{" +
@@ -161,6 +179,7 @@ public class GaenKey {
             ", reportType=" + reportType +
             ", daysSinceOnsetOfSymptons=" + daysSinceOnsetOfSymptons +
             ", efgsSharing=" + efgsSharing +
+            ", visitedCountries=" + visitedCountries +
             '}';
   }
 
