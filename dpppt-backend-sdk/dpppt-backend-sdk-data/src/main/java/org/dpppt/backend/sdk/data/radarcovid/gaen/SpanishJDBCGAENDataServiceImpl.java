@@ -56,7 +56,7 @@ public class SpanishJDBCGAENDataServiceImpl extends JDBCGAENDataServiceImpl impl
 
 		StringBuilder sql = new StringBuilder().append(
 				"select distinct keys.pk_exposed_id, keys.key, keys.rolling_start_number, keys.rolling_period, ")
-				.append("keys.transmission_risk_level from t_gaen_exposed as keys ");
+				.append("keys.transmission_risk_level, keys.report_type, keys.days_since_onset from t_gaen_exposed as keys ");
 
 		if (visitedCountries != null && !visitedCountries.isEmpty()) {
 			sql.append("inner join t_visited as visited on pk_exposed_id = pfk_exposed_id ");

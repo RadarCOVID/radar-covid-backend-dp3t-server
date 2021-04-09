@@ -34,6 +34,7 @@ import org.dpppt.backend.sdk.model.gaen.GaenUnit;
 import org.dpppt.backend.sdk.model.gaen.proto.TemporaryExposureKeyFormat;
 import org.dpppt.backend.sdk.model.gaen.proto.TemporaryExposureKeyFormat.SignatureInfo;
 import org.dpppt.backend.sdk.model.gaen.proto.v2.TemporaryExposureKeyFormatV2;
+import org.dpppt.backend.sdk.model.gaen.proto.v2.TemporaryExposureKeyFormatV2.TemporaryExposureKey.ReportType;
 import org.dpppt.backend.sdk.utils.UTCInstant;
 
 public class ProtoSignature {
@@ -347,7 +348,8 @@ public class ProtoSignature {
               .setKeyData(ByteString.copyFrom(Base64.getDecoder().decode(key.getKeyData())))
               .setRollingPeriod(key.getRollingPeriod())
               .setRollingStartIntervalNumber(key.getRollingStartNumber())
-              .setDaysSinceOnsetOfSymptoms(0) // hardcode to zero
+              .setDaysSinceOnsetOfSymptoms(key.getDaysSinceOnsetOfSymptons().intValue()) 
+              .setReportType(ReportType.forNumber(key.getReportType()))
               .build();
       tekList.add(protoKey);
     }

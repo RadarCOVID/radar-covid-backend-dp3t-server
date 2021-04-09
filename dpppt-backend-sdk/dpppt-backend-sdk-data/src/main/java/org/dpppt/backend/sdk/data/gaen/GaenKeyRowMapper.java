@@ -14,6 +14,29 @@ public class GaenKeyRowMapper implements RowMapper<GaenKey> {
     gaenKey.setRollingStartNumber(rs.getInt("rolling_start_number"));
     gaenKey.setRollingPeriod(rs.getInt("rolling_period"));
     gaenKey.setTransmissionRiskLevel(rs.getInt("transmission_risk_level"));
+    
+    Long daysSinceOnset;
+
+    try {
+    	daysSinceOnset = rs.getLong("days_since_onset");
+    } catch (java.sql.SQLException e) {
+    	daysSinceOnset = null;
+    }
+    if(daysSinceOnset != null) {
+        gaenKey.setDaysSinceOnsetOfSymptons(daysSinceOnset);    	
+    }
+
+    Integer reportType;
+
+    try {
+    	reportType = rs.getInt("report_type");
+    } catch (java.sql.SQLException e) {
+    	reportType = null;
+    }
+    if(reportType != null) {
+        gaenKey.setReportType(reportType);    	
+    }
+
     return gaenKey;
   }
 }
